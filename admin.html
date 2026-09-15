@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>POLISH LAB | 관리자 전용 실시간 예약 관제 시스템</title>
+  
+  <!-- Pretendard Font & Lucide Icons -->
+  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <!-- Admin Stylesheet -->
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+
+  <!-- ==========================================================================
+       1. Security PIN Authentication Gate
+       ========================================================================== -->
+  <div class="admin-login-wrapper" id="adminLoginGate">
+    <div class="login-card">
+      <div class="login-logo-wrap">
+        <i data-lucide="shield-alert"></i>
+      </div>
+      <h2 class="login-title">POLISH LAB 관제 센터</h2>
+      <p class="login-subtitle">관리자 보안 인증 (기본 PIN: 1234)</p>
+
+      <!-- PIN Indicator Dots -->
+      <div class="pin-display" id="pinDisplayBox">
+        <span class="pin-dot"></span>
+        <span class="pin-dot"></span>
+        <span class="pin-dot"></span>
+        <span class="pin-dot"></span>
+      </div>
+
+      <!-- Numeric Keypad -->
+      <div class="keypad-grid">
+        <button class="keypad-btn" data-val="1">1</button>
+        <button class="keypad-btn" data-val="2">2</button>
+        <button class="keypad-btn" data-val="3">3</button>
+        <button class="keypad-btn" data-val="4">4</button>
+        <button class="keypad-btn" data-val="5">5</button>
+        <button class="keypad-btn" data-val="6">6</button>
+        <button class="keypad-btn" data-val="7">7</button>
+        <button class="keypad-btn" data-val="8">8</button>
+        <button class="keypad-btn" data-val="9">9</button>
+        <button class="keypad-btn action-btn" data-val="clear">초기화</button>
+        <button class="keypad-btn" data-val="0">0</button>
+        <button class="keypad-btn action-btn" data-val="backspace">⌫</button>
+      </div>
+
+      <div style="margin-top: 16px;">
+        <a href="index.html" style="font-size: 0.82rem; color: var(--text-muted); text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 4px;">
+          <i data-lucide="arrow-left" style="width: 14px; height: 14px;"></i>
+          <span>고객 전용 사이트로 돌아가기</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       2. Authenticated Admin Dashboard Layout
+       ========================================================================== -->
+  <div class="admin-layout" id="adminDashboard" style="display: none;">
+    
+    <!-- Top Operations Header -->
+    <header class="admin-header">
+      <div class="admin-brand">
+        <div style="width:34px;height:34px;border-radius:8px;background:linear-gradient(135deg,#0284c7,#00f2fe);display:flex;align-items:center;justify-content:center;">
+          <i data-lucide="sparkles" style="width:18px;height:18px;color:#fff;"></i>
+        </div>
+        <div>
+          <span class="admin-brand-title">POLISH LAB</span>
+          <span class="admin-brand-tag">관리자 관제 시스템</span>
+        </div>
+      </div>
+
+      <div class="admin-nav-actions">
+        <button class="btn-header" onclick="loadDashboardData()" title="실시간 데이터 새로고침">
+          <i data-lucide="refresh-cw" style="width:15px;height:15px;"></i>
+          <span>새로고침</span>
+        </button>
+        <button class="btn-header" onclick="exportBookingsToCSV()" title="CSV 엑셀 파일 다운로드">
+          <i data-lucide="download" style="width:15px;height:15px;"></i>
+          <span>CSV 내보내기</span>
+        </button>
+        <button class="btn-header" onclick="openChangePinModal()" title="관리자 PIN 번호 변경">
+          <i data-lucide="key" style="width:15px;height:15px;"></i>
+          <span>PIN 변경</span>
+        </button>
+        <a href="index.html" target="_blank" class="btn-header" title="고객 홈페이지 새창 열기">
+          <i data-lucide="external-link" style="width:15px;height:15px;"></i>
+          <span>고객 사이트</span>
+        </a>
+        <button class="btn-header danger" onclick="adminLogout()" title="관리자 로그아웃">
+          <i data-lucide="log-out" style="width:15px;height:15px;"></i>
+          <span>로그아웃</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Content Body -->
+    <main class="admin-main">
+      
+      <!-- 4 Live KPI Metrics -->
+      <section class="kpi-grid">
+        <div class="kpi-card cyan">
+          <div>
+            <div class="kpi-info-title">총 접수된 예약</div>
+            <div class="kpi-info-val" id="kpiTotalCount">0건</div>
+            <div class="kpi-info-sub">누적 부분광택 신청</div>
+          </div>
+          <div class="kpi-icon-wrap">
+            <i data-lucide="layers" style="width:24px;height:24px;"></i>
+          </div>
+        </div>
+
+        <div class="kpi-card emerald">
+          <div>
+            <div class="kpi-info-title">오늘 신규 접수</div>
+            <div class="kpi-info-val" id="kpiTodayCount">0건</div>
+            <div class="kpi-info-sub">당일 신청 고객 건수</div>
+          </div>
+          <div class="kpi-icon-wrap">
+            <i data-lucide="calendar-check" style="width:24px;height:24px;"></i>
+          </div>
+        </div>
+
+        <div class="kpi-card amber">
+          <div>
+            <div class="kpi-info-title">상담/조율 대기</div>
+            <div class="kpi-info-val" id="kpiPendingCount">0건</div>
+            <div class="kpi-info-sub">확정 대기 중인 예약</div>
+          </div>
+          <div class="kpi-icon-wrap">
+            <i data-lucide="clock" style="width:24px;height:24px;"></i>
+          </div>
+        </div>
+
+        <div class="kpi-card purple">
+          <div>
+            <div class="kpi-info-title">총 예상 매출액</div>
+            <div class="kpi-info-val" id="kpiTotalRevenue">0원</div>
+            <div class="kpi-info-sub">유효 견적 합계액</div>
+          </div>
+          <div class="kpi-icon-wrap">
+            <i data-lucide="trending-up" style="width:24px;height:24px;"></i>
+          </div>
+        </div>
+      </section>
+
+      <!-- Google Sheets Real-Time Webhook Hub -->
+      <section class="gas-hub-card">
+        <div class="gas-hub-header">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div style="width:36px;height:36px;border-radius:8px;background:rgba(16,185,129,0.15);display:flex;align-items:center;justify-content:center;color:#10b981;">
+              <i data-lucide="sheet" style="width:20px;height:20px;"></i>
+            </div>
+            <div>
+              <div style="font-weight:800;color:#fff;font-size:1rem;">구글 스프레드시트 실시간 양방향 연동 허브</div>
+              <div style="font-size:0.78rem;color:var(--text-secondary);margin-top:2px;">고객 예약 신청 시 즉시 구글 시트에 자동 행 추가 및 양방향 동기화</div>
+            </div>
+          </div>
+          
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span class="gas-status-badge inactive" id="adminGasBadge">
+              구글 시트 미연동
+            </span>
+            <button class="btn-header" onclick="copyGASScriptCode()" style="font-size:0.8rem;padding:6px 12px;">
+              <i data-lucide="copy" style="width:14px;height:14px;"></i>
+              <span>Apps Script 코드 복사</span>
+            </button>
+            <a href="https://sheets.new" target="_blank" rel="noopener" class="btn-header" style="font-size:0.8rem;padding:6px 12px;">
+              <i data-lucide="plus" style="width:14px;height:14px;"></i>
+              <span>새 시트 생성</span>
+            </a>
+          </div>
+        </div>
+
+        <div class="gas-url-bar">
+          <input type="url" id="adminGasUrlInput" class="gas-url-input" placeholder="https://script.google.com/macros/s/.../exec (배포된 웹 앱 URL)">
+          <button class="btn-header primary" onclick="saveAdminGasUrl()" style="padding:0 18px;">
+            <i data-lucide="save" style="width:15px;height:15px;"></i>
+            <span>URL 저장</span>
+          </button>
+          <button class="btn-header" onclick="testAdminGasPing()" style="padding:0 18px;">
+            <i data-lucide="send" style="width:15px;height:15px;"></i>
+            <span>테스트 전송</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- Reservation Operations Table Section -->
+      <section class="table-panel">
+        <div class="table-panel-header">
+          <div class="table-filters-row">
+            <button class="filter-tab-btn active" data-filter="all">전체 내역</button>
+            <button class="filter-tab-btn" data-filter="today">오늘 신청</button>
+            <button class="filter-tab-btn" data-filter="shop">센터 입고</button>
+            <button class="filter-tab-btn" data-filter="onsite">출장 케어</button>
+            <button class="filter-tab-btn" data-filter="pending">접수 대기</button>
+            <button class="filter-tab-btn" data-filter="completed">시공 완료</button>
+          </div>
+
+          <div style="display:flex;align-items:center;gap:12px;">
+            <span style="font-size:0.82rem;color:var(--text-muted);">
+              조회 건수: <strong style="color:var(--accent-cyan);" id="tableRowCountBadge">0건</strong>
+            </span>
+            <div class="search-input-wrap">
+              <i data-lucide="search"></i>
+              <input type="text" id="tableSearchInput" placeholder="고객명, 연락처, 차량번호 검색...">
+            </div>
+          </div>
+        </div>
+
+        <!-- Data Table -->
+        <div class="data-table-container">
+          <table class="admin-data-table">
+            <thead>
+              <tr>
+                <th>예약 ID</th>
+                <th>접수 일시</th>
+                <th>고객 정보</th>
+                <th>차량 정보</th>
+                <th>시공 방식 / 희망일</th>
+                <th>선택 부위</th>
+                <th>최종 견적</th>
+                <th>진행 상태</th>
+                <th>관리</th>
+              </tr>
+            </thead>
+            <tbody id="adminTableBody">
+              <!-- Populated dynamically via admin.js -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ==========================================================================
+       3. Modal: Detailed Reservation & Status Change
+       ========================================================================== -->
+  <div class="modal-overlay hidden" id="adminDetailModal">
+    <div class="modal-box">
+      <div class="modal-box-header">
+        <div class="modal-box-title">
+          <i data-lucide="file-text" style="color:var(--accent-cyan);"></i>
+          <span>예약 상세 정보 및 상태 관리</span>
+        </div>
+        <div class="modal-close-icon" onclick="closeDetailModal()">
+          <i data-lucide="x" style="width:20px;height:20px;"></i>
+        </div>
+      </div>
+
+      <div class="modal-box-body">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;background:rgba(0,0,0,0.3);padding:14px;border-radius:var(--radius-md);border:1px solid var(--border-card);">
+          <div>
+            <div style="font-size:0.75rem;color:var(--text-muted);">신청번호 (ID)</div>
+            <div style="font-weight:800;color:var(--accent-cyan);" id="modalDetailId">-</div>
+          </div>
+          <div>
+            <div style="font-size:0.75rem;color:var(--text-muted);">고객명 / 연락처</div>
+            <div style="font-weight:800;color:#fff;" id="modalDetailName">-</div>
+          </div>
+          <div>
+            <div style="font-size:0.75rem;color:var(--text-muted);">차량 및 번호판</div>
+            <div style="font-weight:700;color:#fff;" id="modalDetailCar">-</div>
+          </div>
+          <div>
+            <div style="font-size:0.75rem;color:var(--text-muted);">희망 시공일시</div>
+            <div style="font-weight:700;color:#fff;" id="modalDetailSchedule">-</div>
+          </div>
+          <div style="grid-column: span 2;">
+            <div style="font-size:0.75rem;color:var(--text-muted);">시공 방식 및 장소/주소</div>
+            <div style="font-weight:700;color:#fff;" id="modalDetailLocation">-</div>
+          </div>
+          <div style="grid-column: span 2;">
+            <div style="font-size:0.75rem;color:var(--text-muted);">손상도 판정</div>
+            <div style="font-weight:700;color:var(--accent-amber);" id="modalDetailDamage">-</div>
+          </div>
+          <div style="grid-column: span 2;">
+            <div style="font-size:0.75rem;color:var(--text-muted);">선택 시공 부위</div>
+            <div style="font-weight:800;color:var(--accent-cyan);" id="modalDetailPanels">-</div>
+          </div>
+          <div style="grid-column: span 2;">
+            <div style="font-size:0.75rem;color:var(--text-muted);">추가 케어 옵션</div>
+            <div style="font-weight:700;color:#fff;" id="modalDetailAddons">-</div>
+          </div>
+          <div style="grid-column: span 2;">
+            <div style="font-size:0.75rem;color:var(--text-muted);">특이사항 및 요청사항</div>
+            <div style="font-size:0.85rem;color:var(--text-secondary);" id="modalDetailRemarks">-</div>
+          </div>
+          <div style="grid-column: span 2;border-top:1px dashed var(--border-card);padding-top:10px;display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-weight:800;color:#fff;">최종 견적 금액:</span>
+            <span style="font-size:1.3rem;font-weight:900;color:var(--accent-cyan);" id="modalDetailPrice">0원</span>
+          </div>
+        </div>
+
+        <!-- Status Management Action Bar -->
+        <div style="background:rgba(255,255,255,0.03);padding:14px;border-radius:var(--radius-md);border:1px solid var(--border-card);margin-bottom:18px;">
+          <label style="font-size:0.82rem;font-weight:800;color:#fff;display:block;margin-bottom:8px;">진행 상태 변경</label>
+          <div style="display:flex;gap:10px;">
+            <select id="modalStatusSelect" style="flex:1;background:#090d16;border:1px solid var(--border-card);color:#fff;padding:10px;border-radius:var(--radius-md);font-size:0.85rem;font-weight:700;">
+              <option value="예약 접수완료">예약 접수완료</option>
+              <option value="시공예정">시공예정 (일정 확정)</option>
+              <option value="시공진행">시공진행 (작업 중)</option>
+              <option value="시공완료">시공완료 (출고 완료)</option>
+              <option value="취소">예약 취소</option>
+            </select>
+            <button class="btn-header primary" onclick="saveBookingStatusChange()" style="padding:0 18px;">
+              <i data-lucide="check" style="width:15px;height:15px;"></i>
+              <span>상태 저장</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <button class="btn-header" onclick="copyCustomerNoticeKakao()" style="justify-content:center;padding:11px;">
+            <i data-lucide="message-square" style="width:15px;height:15px;"></i>
+            <span>고객 안내문 복사</span>
+          </button>
+          <button class="btn-header" onclick="closeDetailModal()" style="justify-content:center;padding:11px;">
+            <span>닫기</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       4. Modal: Change Admin PIN
+       ========================================================================== -->
+  <div class="modal-overlay hidden" id="changePinModal">
+    <div class="modal-box" style="max-width: 440px;">
+      <div class="modal-box-header">
+        <div class="modal-box-title">
+          <i data-lucide="key" style="color:var(--accent-cyan);"></i>
+          <span>관리자 PIN 번호 변경</span>
+        </div>
+        <div class="modal-close-icon" onclick="closeChangePinModal()">
+          <i data-lucide="x" style="width:20px;height:20px;"></i>
+        </div>
+      </div>
+
+      <div class="modal-box-body">
+        <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:20px;">
+          <div>
+            <label style="font-size:0.8rem;color:var(--text-secondary);display:block;margin-bottom:4px;">현재 비밀번호 (숫자 4자리)</label>
+            <input type="password" id="currentPinInput" maxlength="4" style="width:100%;background:#090d16;border:1px solid var(--border-card);padding:10px;border-radius:var(--radius-md);color:#fff;font-size:1.1rem;letter-spacing:4px;text-align:center;">
+          </div>
+          <div>
+            <label style="font-size:0.8rem;color:var(--text-secondary);display:block;margin-bottom:4px;">새 비밀번호 (숫자 4자리)</label>
+            <input type="password" id="newPinInput" maxlength="4" style="width:100%;background:#090d16;border:1px solid var(--border-card);padding:10px;border-radius:var(--radius-md);color:#fff;font-size:1.1rem;letter-spacing:4px;text-align:center;">
+          </div>
+          <div>
+            <label style="font-size:0.8rem;color:var(--text-secondary);display:block;margin-bottom:4px;">새 비밀번호 확인</label>
+            <input type="password" id="confirmPinInput" maxlength="4" style="width:100%;background:#090d16;border:1px solid var(--border-card);padding:10px;border-radius:var(--radius-md);color:#fff;font-size:1.1rem;letter-spacing:4px;text-align:center;">
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <button class="btn-header primary" onclick="saveNewAdminPin()" style="justify-content:center;padding:11px;">
+            <span>변경 저장</span>
+          </button>
+          <button class="btn-header" onclick="closeChangePinModal()" style="justify-content:center;padding:11px;">
+            <span>취소</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="adminToastContainer" style="position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:10px;"></div>
+
+  <!-- Main JavaScript Logic -->
+  <script src="admin.js"></script>
+</body>
+</html>
