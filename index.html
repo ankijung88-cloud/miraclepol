@@ -1,0 +1,1054 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>POLISH LAB | 프리미엄 부분광택 스마트 실시간 견적 & 예약</title>
+  <meta name="description" content="원하는 부위만 골라 투명한 실시간 견적 확인! 특허 수성 듀얼 폴리싱으로 도장면 손상 없이 스크래치 완벽 복원">
+  
+  <!-- Pretendard Font & Lucide Icons -->
+  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <!-- Main Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Top Navigation Bar -->
+  <header class="navbar" id="navbar">
+    <div class="container nav-container">
+      <div class="brand-logo">
+        <div class="logo-icon-wrap">
+          <i data-lucide="sparkles"></i>
+        </div>
+        <span>POLISH LAB</span>
+        <span class="brand-badge">고객 전용</span>
+      </div>
+
+      <nav class="nav-links">
+        <a href="#studioSection" class="nav-link">실시간 부분견적</a>
+        <a href="#beforeAfterSection" class="nav-link">비포&애프터</a>
+        <a href="#processSection" class="nav-link">시공 프로세스</a>
+        <a href="#reserveSection" class="nav-link">간편 예약신청</a>
+        <a href="#faqSection" class="nav-link">자주 묻는 질문</a>
+      </nav>
+
+      <div class="nav-actions">
+        <button id="navLookupBtn" class="btn-lookup" title="예약 및 견적 내역 조회">
+          <i data-lucide="search" style="width:16px;height:16px;"></i>
+          <span>내 예약/견적 조회</span>
+        </button>
+        <a href="#reserveSection" class="btn-nav-cta">
+          <i data-lucide="calendar" style="width:16px;height:16px;"></i>
+          <span>바로 예약하기</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="container hero-wrapper">
+      <div class="hero-pill">
+        <i data-lucide="shield-check" style="width:16px;height:16px;"></i>
+        <span>100% 정밀 수성 듀얼 광택 & 클리어코트 손상 최소화</span>
+      </div>
+
+      <h1 class="hero-title">
+        차량 전체 광택의 부담은 덜고,<br>
+        <span class="gradient-text">상처 난 부위만 투명하게 복원</span>하세요.
+      </h1>
+
+      <p class="hero-desc">
+        주차장 쓸림, 범퍼 긁힘, 본넷 스월마크까지! 차량 부위를 직접 클릭하여 실시간 맞춤 견적을 즉시 산출하고 간편하게 예약하세요.
+      </p>
+
+      <div class="hero-stats-grid">
+        <div class="hero-stat-card">
+          <div class="stat-num">99.8%</div>
+          <div class="stat-lbl">고객 복원 만족도</div>
+        </div>
+        <div class="hero-stat-card">
+          <div class="stat-num">15,400+</div>
+          <div class="stat-lbl">누적 부분시공 건수</div>
+        </div>
+        <div class="hero-stat-card">
+          <div class="stat-num">0%</div>
+          <div class="stat-lbl">과다 연마/도장 손상</div>
+        </div>
+        <div class="hero-stat-card">
+          <div class="stat-num">1년 무상</div>
+          <div class="stat-lbl">품질 안심 보증</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Interactive Studio Section: Panel Selector & Real-Time Calculator -->
+  <section class="studio-section" id="studioSection">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Interactive Estimator</span>
+        <h2 class="section-title">스마트 차량 부위 선택 & 실시간 견적</h2>
+        <p class="section-subtitle">차종과 흠집 상태를 선택한 뒤, 복원을 원하는 차량 부위를 터치하세요.</p>
+      </div>
+
+      <div class="studio-grid">
+        <!-- Left Column: Interactive Selector & Options -->
+        <div class="studio-controls-col">
+          
+          <!-- Step 1: Vehicle Class Selection -->
+          <div class="glass-box" style="margin-bottom: 24px;">
+            <div class="glass-box-header">
+              <div class="box-title-wrap">
+                <div class="box-step-badge">1</div>
+                <h3 class="box-title">차종 구분 선택</h3>
+              </div>
+              <span style="font-size:0.8rem;color:var(--text-dim);">차급별 도장 면적 기준</span>
+            </div>
+
+            <div class="car-class-grid" id="carClassGrid">
+              <button class="car-class-btn active" data-class="light" data-name="경차 / 소형" data-multiplier="1.0">
+                <span class="class-icon">🚗</span>
+                <span class="class-name">경차 / 소형</span>
+                <span class="class-eg">모닝, 레이, 캐스퍼, 아반떼</span>
+              </button>
+
+              <button class="car-class-btn" data-class="sedan" data-name="중형 / 준대형 세단" data-multiplier="1.15">
+                <span class="class-icon">🚘</span>
+                <span class="class-name">중형 / 준대형 세단</span>
+                <span class="class-eg">쏘나타, K5, 그랜저, G80</span>
+              </button>
+
+              <button class="car-class-btn" data-class="luxury_sedan" data-name="대형 / 플래그십" data-multiplier="1.25">
+                <span class="class-icon">🏎️</span>
+                <span class="class-name">대형 / 플래그십</span>
+                <span class="class-eg">G90, S클래스, 7시리즈</span>
+              </button>
+
+              <button class="car-class-btn" data-class="suv_compact" data-name="소형 / 준중형 SUV" data-multiplier="1.15">
+                <span class="class-icon">🚙</span>
+                <span class="class-name">소형 / 준중형 SUV</span>
+                <span class="class-eg">셀토스, 코나, 투싼, 스포티지</span>
+              </button>
+
+              <button class="car-class-btn" data-class="suv_large" data-name="중대형 SUV / RV" data-multiplier="1.3">
+                <span class="class-icon">🚐</span>
+                <span class="class-name">중대형 SUV / RV</span>
+                <span class="class-eg">쏘렌토, 싼타페, 팰리세이드, 카니발</span>
+              </button>
+
+              <button class="car-class-btn" data-class="import_exotic" data-name="수입 고급 / 특수도장" data-multiplier="1.35">
+                <span class="class-icon">💎</span>
+                <span class="class-name">수입 고급 / 특수도장</span>
+                <span class="class-eg">포르쉐, 고경도 클리어 도장 등</span>
+              </button>
+            </div>
+
+            <!-- Damage Severity Selection -->
+            <div class="damage-level-section">
+              <label class="sub-label">스크래치 / 흠집 손상도 선택</label>
+              <div class="damage-grid" id="damageGrid">
+                <div class="damage-card active" data-damage="level1" data-factor="1.0" data-label="Lv 1. 미세 스월 & 워터스팟">
+                  <div class="damage-card-header">
+                    <span class="damage-title">Lv 1. 미세 스월 / 물때</span>
+                    <span class="damage-level-tag">표준 1.0x</span>
+                  </div>
+                  <p class="damage-desc">햇빛 아래 동심원 스월마크, 워터스팟, 빗물 자국</p>
+                </div>
+
+                <div class="damage-card" data-damage="level2" data-factor="1.15" data-label="Lv 2. 얕은 잔기스 & 산화막">
+                  <div class="damage-card-header">
+                    <span class="damage-title">Lv 2. 얕은 잔기스 / 산화</span>
+                    <span class="damage-level-tag">+15%</span>
+                  </div>
+                  <p class="damage-desc">손톱에 걸리지 않는 생활 기스, 자동세차 솔 자국</p>
+                </div>
+
+                <div class="damage-card" data-damage="level3" data-factor="1.3" data-label="Lv 3. 주차 쓸림 & 페인트 마찰 흠집">
+                  <div class="damage-card-header">
+                    <span class="damage-title">Lv 3. 주차 쓸림 / 페인트 묻음</span>
+                    <span class="damage-level-tag">+30%</span>
+                  </div>
+                  <p class="damage-desc">기둥·벽면 쓸림 흠집, 타차량 페인트 묻음/마찰 자국</p>
+                </div>
+
+                <div class="damage-card" data-damage="level4" data-factor="1.5" data-label="Lv 4. 복합 손상 & 페인트 고착">
+                  <div class="damage-card-header">
+                    <span class="damage-title">Lv 4. 복합 손상 / 페인트 이물</span>
+                    <span class="damage-level-tag">+50%</span>
+                  </div>
+                  <p class="damage-desc">페인트 낙진, 시멘트물, 헤이즈 현상, 도장 광택 상실</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 2: Interactive Vehicle Panel Visual Selector -->
+          <div class="glass-box" style="margin-bottom: 24px;">
+            <div class="glass-box-header">
+              <div class="box-title-wrap">
+                <div class="box-step-badge">2</div>
+                <h3 class="box-title">시공 부위 터치 선택</h3>
+              </div>
+              <span style="font-size:0.8rem;color:var(--accent-cyan);"><i data-lucide="hand" style="width:14px;height:14px;vertical-align:middle;"></i> 다이어그램 클릭 시 자동 선택</span>
+            </div>
+
+            <!-- View Switcher -->
+            <div class="view-tabs" id="viewTabs">
+              <button class="view-tab active" data-view="top">차량 상단/전체 뷰 (Top View)</button>
+              <button class="view-tab" data-view="side">차량 측면 뷰 (Side View)</button>
+            </div>
+
+            <!-- Car Interactive SVG Visual Wrapper -->
+            <div class="car-visual-wrapper">
+              <div class="panel-tooltip-badge" id="panelHoverBadge">
+                <i data-lucide="mouse-pointer-click" style="width:13px;height:13px;"></i>
+                <span id="hoverPanelName">원하는 부위에 마우스를 올리거나 터치하세요</span>
+              </div>
+
+              <!-- Top View SVG Diagram -->
+              <svg id="svgTopView" class="car-svg-view" viewBox="0 0 500 240" xmlns="http://www.w3.org/2000/svg">
+                <!-- Vehicle Shadow -->
+                <ellipse cx="250" cy="120" rx="220" ry="90" fill="rgba(0,0,0,0.5)" filter="blur(10px)"/>
+                
+                <!-- Main Body Base Silhouette -->
+                <rect x="70" y="45" width="360" height="150" rx="55" fill="#0b1322" stroke="#334155" stroke-width="2"/>
+                
+                <!-- Front Bumper -->
+                <path id="svg-front-bumper" class="car-panel-path" data-panel="front_bumper" d="M70,75 C70,55 85,45 105,45 L105,195 C85,195 70,185 70,165 Z" />
+                <text x="88" y="125" fill="#94a3b8" font-size="11" font-weight="700" text-anchor="middle" pointer-events="none">앞범퍼</text>
+
+                <!-- Front Bonnet / Hood -->
+                <path id="svg-bonnet" class="car-panel-path" data-panel="bonnet" d="M107,48 L190,52 L190,188 L107,192 Z" />
+                <text x="148" y="125" fill="#94a3b8" font-size="12" font-weight="800" text-anchor="middle" pointer-events="none">본넷(보닛)</text>
+
+                <!-- Front Fenders (Left / Right) -->
+                <path id="svg-fender-front-left" class="car-panel-path" data-panel="front_fender_l" d="M107,35 L190,38 L190,50 L107,46 Z" />
+                <text x="148" y="44" fill="#94a3b8" font-size="8" font-weight="700" text-anchor="middle" pointer-events="none">앞휀다(좌)</text>
+
+                <path id="svg-fender-front-right" class="car-panel-path" data-panel="front_fender_r" d="M107,194 L190,190 L190,202 L107,205 Z" />
+                <text x="148" y="199" fill="#94a3b8" font-size="8" font-weight="700" text-anchor="middle" pointer-events="none">앞휀다(우)</text>
+
+                <!-- Windshield (Non-clickable graphic) -->
+                <polygon points="193,55 235,65 235,175 193,185" fill="#1e293b" stroke="#475569" stroke-width="1.5" />
+                <text x="214" y="124" fill="#64748b" font-size="10" text-anchor="middle" pointer-events="none">전면유리</text>
+
+                <!-- Roof -->
+                <rect id="svg-roof" class="car-panel-path" data-panel="roof" x="238" y="65" width="95" height="110" rx="8" />
+                <text x="285" y="125" fill="#94a3b8" font-size="12" font-weight="800" text-anchor="middle" pointer-events="none">루프(천장)</text>
+
+                <!-- Rear Windshield (Non-clickable) -->
+                <polygon points="335,65 375,55 375,185 335,175" fill="#1e293b" stroke="#475569" stroke-width="1.5" />
+                <text x="355" y="124" fill="#64748b" font-size="10" text-anchor="middle" pointer-events="none">후면유리</text>
+
+                <!-- Rear Fenders (Left / Right) -->
+                <path id="svg-fender-rear-left" class="car-panel-path" data-panel="rear_fender_l" d="M335,40 L415,48 L415,62 L377,54 L335,63 Z" />
+                <text x="375" y="47" fill="#94a3b8" font-size="8" font-weight="700" text-anchor="middle" pointer-events="none">뒤휀다(좌)</text>
+
+                <path id="svg-fender-rear-right" class="car-panel-path" data-panel="rear_fender_r" d="M335,177 L377,186 L415,178 L415,194 L335,200 Z" />
+                <text x="375" y="196" fill="#94a3b8" font-size="8" font-weight="700" text-anchor="middle" pointer-events="none">뒤휀다(우)</text>
+
+                <!-- Trunk / Tailgate -->
+                <path id="svg-trunk" class="car-panel-path" data-panel="trunk" d="M377,52 L415,58 L415,182 L377,188 Z" />
+                <text x="396" y="125" fill="#94a3b8" font-size="11" font-weight="800" text-anchor="middle" pointer-events="none">트렁크</text>
+
+                <!-- Rear Bumper -->
+                <path id="svg-rear-bumper" class="car-panel-path" data-panel="rear_bumper" d="M417,60 C430,60 435,75 435,95 L435,145 C435,165 430,180 417,180 Z" />
+                <text x="426" y="125" fill="#94a3b8" font-size="11" font-weight="700" text-anchor="middle" pointer-events="none">뒷범퍼</text>
+
+                <!-- Left Doors (Front / Rear) -->
+                <path id="svg-door-front-left" class="car-panel-path" data-panel="front_door_l" d="M193,38 L260,40 L260,62 L193,53 Z" />
+                <text x="226" y="50" fill="#94a3b8" font-size="9" font-weight="700" text-anchor="middle" pointer-events="none">앞도어(좌)</text>
+
+                <path id="svg-door-rear-left" class="car-panel-path" data-panel="rear_door_l" d="M263,40 L333,40 L333,63 L263,62 Z" />
+                <text x="298" y="50" fill="#94a3b8" font-size="9" font-weight="700" text-anchor="middle" pointer-events="none">뒷도어(좌)</text>
+
+                <!-- Right Doors (Front / Rear) -->
+                <path id="svg-door-front-right" class="car-panel-path" data-panel="front_door_r" d="M193,187 L260,178 L260,200 L193,202 Z" />
+                <text x="226" y="194" fill="#94a3b8" font-size="9" font-weight="700" text-anchor="middle" pointer-events="none">앞도어(우)</text>
+
+                <path id="svg-door-rear-right" class="car-panel-path" data-panel="rear_door_r" d="M263,178 L333,177 L333,200 L263,200 Z" />
+                <text x="298" y="194" fill="#94a3b8" font-size="9" font-weight="700" text-anchor="middle" pointer-events="none">뒷도어(우)</text>
+              </svg>
+
+              <!-- Side View SVG Diagram (Toggleable) -->
+              <svg id="svgSideView" class="car-svg-view" viewBox="0 0 500 200" xmlns="http://www.w3.org/2000/svg" style="display:none;">
+                <ellipse cx="250" cy="170" rx="210" ry="20" fill="rgba(0,0,0,0.5)" filter="blur(8px)"/>
+                
+                <!-- Side Silhouette -->
+                <!-- Front Bumper Side -->
+                <path id="svg-side-front-bumper" class="car-panel-path" data-panel="front_bumper" d="M50,120 Q50,90 70,85 L85,85 L85,135 L60,135 Z" />
+                <text x="68" y="112" fill="#94a3b8" font-size="9" font-weight="700" text-anchor="middle" pointer-events="none">앞범퍼</text>
+
+                <!-- Front Fender Side -->
+                <path id="svg-side-front-fender" class="car-panel-path" data-panel="front_fender_l" d="M87,85 L165,85 L165,135 L135,135 Q120,105 100,135 L87,135 Z" />
+                <text x="125" y="105" fill="#94a3b8" font-size="10" font-weight="700" text-anchor="middle" pointer-events="none">앞휀다</text>
+
+                <!-- Front Door Side -->
+                <path id="svg-side-front-door" class="car-panel-path" data-panel="front_door_l" d="M168,60 L240,60 L240,140 L168,140 Z" />
+                <text x="204" y="105" fill="#94a3b8" font-size="11" font-weight="700" text-anchor="middle" pointer-events="none">앞도어</text>
+
+                <!-- Rear Door Side -->
+                <path id="svg-side-rear-door" class="car-panel-path" data-panel="rear_door_l" d="M243,60 L315,60 L315,140 L243,140 Z" />
+                <text x="279" y="105" fill="#94a3b8" font-size="11" font-weight="700" text-anchor="middle" pointer-events="none">뒷도어</text>
+
+                <!-- Rear Quarter / Fender Side -->
+                <path id="svg-side-rear-fender" class="car-panel-path" data-panel="rear_fender_l" d="M318,60 L395,85 L395,135 L375,135 Q355,105 335,135 L318,135 Z" />
+                <text x="355" y="105" fill="#94a3b8" font-size="10" font-weight="700" text-anchor="middle" pointer-events="none">뒤휀다</text>
+
+                <!-- Rear Bumper Side -->
+                <path id="svg-side-rear-bumper" class="car-panel-path" data-panel="rear_bumper" d="M397,85 Q425,90 425,120 L400,135 L397,135 Z" />
+                <text x="410" y="112" fill="#94a3b8" font-size="9" font-weight="700" text-anchor="middle" pointer-events="none">뒷범퍼</text>
+
+                <!-- Side Mirror -->
+                <path id="svg-side-mirror" class="car-panel-path" data-panel="side_mirror" d="M175,65 Q160,60 160,72 Q175,76 180,70 Z" />
+                <text x="170" y="60" fill="#94a3b8" font-size="8" font-weight="700" text-anchor="middle" pointer-events="none">미러</text>
+
+                <!-- Roof Top line -->
+                <path id="svg-side-roof" class="car-panel-path" data-panel="roof" d="M170,40 L315,40 L315,55 L170,55 Z" />
+                <text x="242" y="50" fill="#94a3b8" font-size="9" font-weight="700" text-anchor="middle" pointer-events="none">루프(상단)</text>
+
+                <!-- Wheels (Decorative) -->
+                <circle cx="110" cy="135" r="22" fill="#0f172a" stroke="#475569" stroke-width="4"/>
+                <circle cx="345" cy="135" r="22" fill="#0f172a" stroke="#475569" stroke-width="4"/>
+              </svg>
+            </div>
+
+            <!-- Direct Panel Chips (Quick Click Alternative) -->
+            <label class="sub-label" style="margin-top: 18px;">부위별 목록 직접 체크 (복수 선택 가능)</label>
+            <div class="panel-grid-checklist" id="panelChipsGrid">
+              <!-- Dynamically populated via JS -->
+            </div>
+          </div>
+
+          <!-- Step 3: Add-on Protection & Detailing Services -->
+          <div class="glass-box">
+            <div class="glass-box-header">
+              <div class="box-title-wrap">
+                <div class="box-step-badge">3</div>
+                <h3 class="box-title">추가 프리미엄 케어 옵션</h3>
+              </div>
+              <span style="font-size:0.8rem;color:var(--text-dim);">시공 부위 동시 보호</span>
+            </div>
+
+            <div class="addon-grid" id="addonGrid">
+              <div class="addon-item" data-addon="coating" data-price="35000">
+                <div class="addon-header-row">
+                  <div class="addon-title-group">
+                    <div class="addon-icon-box"><i data-lucide="shield"></i></div>
+                    <span class="addon-title">하이엔드 유리막 코팅</span>
+                  </div>
+                  <span class="addon-price-badge">+35,000원</span>
+                </div>
+                <div class="addon-desc">광택 시공 부위 초발수 보호피막 안착</div>
+              </div>
+
+              <div class="addon-item" data-addon="glass" data-price="25000">
+                <div class="addon-header-row">
+                  <div class="addon-title-group">
+                    <div class="addon-icon-box"><i data-lucide="droplets"></i></div>
+                    <span class="addon-title">유막제거 & 발수코팅</span>
+                  </div>
+                  <span class="addon-price-badge">+25,000원</span>
+                </div>
+                <div class="addon-desc">전면유리 비 오는 날 선명한 시야 확보</div>
+              </div>
+
+              <div class="addon-item" data-addon="headlight" data-price="45000">
+                <div class="addon-header-row">
+                  <div class="addon-title-group">
+                    <div class="addon-icon-box"><i data-lucide="sun"></i></div>
+                    <span class="addon-title">헤드라이트 복원</span>
+                  </div>
+                  <span class="addon-price-badge">+45,000원</span>
+                </div>
+                <div class="addon-desc">황변 및 뿌옇게 변한 렌즈 투명 복원 (1조)</div>
+              </div>
+
+              <div class="addon-item" data-addon="ppf" data-price="25000">
+                <div class="addon-header-row">
+                  <div class="addon-title-group">
+                    <div class="addon-icon-box"><i data-lucide="layers"></i></div>
+                    <span class="addon-title">생활보호 PPF 필름</span>
+                  </div>
+                  <span class="addon-price-badge">+25,000원</span>
+                </div>
+                <div class="addon-desc">도어컵 & 엣지 손톱 긁힘 방지 (4문짝)</div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Right Column: Sticky Live Quote Summary Card -->
+        <div class="quote-summary-col">
+          <div class="quote-summary-sticky">
+            <div class="quote-summary-card">
+              <div class="quote-badge-top">
+                <div class="live-indicator">
+                  <div class="live-dot"></div>
+                  <span>실시간 산출 견적서</span>
+                </div>
+                <div class="car-class-selected-badge" id="summaryCarClassBadge">경차 / 소형</div>
+              </div>
+
+              <!-- Selected Panels Chips Summary -->
+              <div class="selected-panels-summary-box">
+                <div class="summary-box-title">
+                  <span>선택된 시공 부위 (<strong id="selectedPanelCount" style="color:var(--accent-cyan);">0</strong>개)</span>
+                  <button id="btnClearAllPanels" style="color:var(--text-dim);font-size:0.75rem;cursor:pointer;text-decoration:underline;">전체 해제</button>
+                </div>
+                <div class="selected-panels-tags" id="selectedPanelsTags">
+                  <div class="empty-panel-prompt">
+                    위의 차량 다이어그램 또는 목록에서<br>복원할 부위를 1개 이상 선택해 주세요.
+                  </div>
+                </div>
+              </div>
+
+              <!-- Price Breakdown List -->
+              <div class="price-breakdown-list">
+                <div class="breakdown-row">
+                  <span class="breakdown-label">부위별 기본 시공비</span>
+                  <span class="breakdown-val" id="sumBasePrice">0원</span>
+                </div>
+
+                <div class="breakdown-row">
+                  <span class="breakdown-label">
+                    차종 및 손상도 가산
+                    <span style="font-size:0.72rem;color:var(--text-dim);" id="sumMultiplierDesc">(1.0x)</span>
+                  </span>
+                  <span class="breakdown-val" id="sumMultiplierPrice">0원</span>
+                </div>
+
+                <div class="breakdown-row">
+                  <span class="breakdown-label">선택 추가 옵션</span>
+                  <span class="breakdown-val" id="sumAddonPrice">0원</span>
+                </div>
+
+                <div class="breakdown-row discount-highlight" id="rowDiscount" style="display:none;">
+                  <span class="breakdown-label">
+                    다부위 패키지 할인
+                    <span class="package-discount-pill" id="discountRateBadge">-10%</span>
+                  </span>
+                  <span class="breakdown-val" id="sumDiscountPrice">-0원</span>
+                </div>
+              </div>
+
+              <!-- Total Price Banner -->
+              <div class="total-price-banner">
+                <div class="total-title">최종 예상 시공 견적 (부가세 포함)</div>
+                <div class="total-amount-wrap">
+                  <span class="total-amount-num" id="finalTotalPrice">0</span>
+                  <span class="total-amount-unit">원</span>
+                </div>
+                <div class="time-estimate">
+                  <i data-lucide="clock" style="width:14px;height:14px;"></i>
+                  <span>예상 시공 소요 시간: <strong id="estWorkTime">선택 대기</strong></span>
+                </div>
+              </div>
+
+              <!-- Proceed Button -->
+              <button id="btnProceedReserve" class="btn-proceed-reserve">
+                <i data-lucide="check-circle-2" style="width:20px;height:20px;"></i>
+                <span>이 견적으로 예약 신청하기</span>
+              </button>
+
+              <!-- Trust Guarantee Items -->
+              <div class="trust-guarantee-badges">
+                <div class="trust-badge-item">
+                  <i data-lucide="shield-check"></i>
+                  <span>수성 듀얼 도장보호</span>
+                </div>
+                <div class="trust-badge-item">
+                  <i data-lucide="sparkles"></i>
+                  <span>현장 추가금 절대 없음</span>
+                </div>
+                <div class="trust-badge-item">
+                  <i data-lucide="badge-check"></i>
+                  <span>1년 품질 안심 보증</span>
+                </div>
+                <div class="trust-badge-item">
+                  <i data-lucide="receipt"></i>
+                  <span>디지털 영수증 즉시 발급</span>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- Before & After Interactive Comparison Slider -->
+  <section class="before-after-section" id="beforeAfterSection">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">High Definition Proof</span>
+        <h2 class="section-title">비포 & 애프터(Before & After) 정밀 비교</h2>
+        <p class="section-subtitle">슬라이더를 좌우로 드래그하여 거울처럼 복원된 도장면을 확인하세요.</p>
+      </div>
+
+      <!-- Case Tabs -->
+      <div class="comparison-case-tabs">
+        <button class="case-tab-btn active" data-case="swirl">본넷 동심원 스월마크 & 워터스팟</button>
+        <button class="case-tab-btn" data-case="scratch">도어 접촉 쓸림 & 딥스크래치 흠집</button>
+        <button class="case-tab-btn" data-case="bumper">범퍼 코너 쓸림 & 주차 마찰 흠집</button>
+      </div>
+
+      <!-- Comparison Box -->
+      <div class="slider-comparison-box" id="comparisonSliderBox" style="margin-top: 24px;">
+        <!-- Before Layer -->
+        <div class="comparison-image-layer image-before">
+          <div class="car-hood-simulation before-paint">
+            <div class="swirl-scratch-overlay" id="simSwirlOverlay"></div>
+            <div class="defect-haze"></div>
+          </div>
+          <div class="label-before">시공 전 (BEFORE)</div>
+        </div>
+
+        <!-- After Layer -->
+        <div class="comparison-image-layer image-after" id="afterImageLayer">
+          <div class="after-inner-image">
+            <div class="car-hood-simulation after-paint">
+              <div class="mirror-gloss-reflection"></div>
+              <div class="water-beading-dots"></div>
+            </div>
+          </div>
+          <div class="label-after">시공 후 (AFTER)</div>
+        </div>
+
+        <!-- Draggable Handle Bar -->
+        <div class="comparison-slider-handle" id="sliderHandle">
+          <div class="handle-circle">
+            <i data-lucide="move-horizontal" style="width:18px;height:18px;"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5-Step Precision Water-Based Polishing Process -->
+  <section class="process-section" id="processSection">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Quality Craftsmanship</span>
+        <h2 class="section-title">POLISH LAB 5단계 정밀 수성 광택 공정</h2>
+        <p class="section-subtitle">유성 약재로 흠집을 일시적으로 덮지 않고, 100% 수성 약재와 듀얼 폴리셔로 도장을 영구 복원합니다.</p>
+      </div>
+
+      <div class="process-grid">
+        <div class="process-step-card">
+          <div class="step-num-watermark">01</div>
+          <div class="step-icon-wrap"><i data-lucide="scan-line"></i></div>
+          <h4 class="step-title">정밀 진단 & 세정</h4>
+          <p class="step-desc">도장면 디지털 도막 측정 및 철분/타르 클레이 클렌징으로 고착 오염물 100% 제거</p>
+        </div>
+
+        <div class="process-step-card">
+          <div class="step-num-watermark">02</div>
+          <div class="step-icon-wrap"><i data-lucide="shield-alert"></i></div>
+          <h4 class="step-title">풀 마스킹 보호</h4>
+          <p class="step-desc">시공 부위 외 고무 몰딩, 크롬, 엠블럼, 유리 등 비시공 부위 완벽 차단 마스킹</p>
+        </div>
+
+        <div class="process-step-card">
+          <div class="step-num-watermark">03</div>
+          <div class="step-icon-wrap"><i data-lucide="disc"></i></div>
+          <h4 class="step-title">1차 수성 듀얼 컷팅</h4>
+          <p class="step-desc">초미립자 수성 컴파운드로 클리어코트 손상 없이 깊은 스크래치 및 흠집 완벽 제거</p>
+        </div>
+
+        <div class="process-step-card">
+          <div class="step-num-watermark">04</div>
+          <div class="step-icon-wrap"><i data-lucide="sparkle"></i></div>
+          <h4 class="step-title">2차 미러 피니싱</h4>
+          <p class="step-desc">홀로그램 및 미세 연마 자국을 완벽히 잡는 나노 피니셔로 본래의 거울 광택 복원</p>
+        </div>
+
+        <div class="process-step-card">
+          <div class="step-num-watermark">05</div>
+          <div class="step-icon-wrap"><i data-lucide="award"></i></div>
+          <h4 class="step-title">탈지 & 보호 코팅</h4>
+          <p class="step-desc">특수 알코올 탈지 세정 후 실리카/유리막 실란트로 시공면 보호막 안착 및 최종 출고</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Reservation & Photo Upload Form Section -->
+  <section class="reservation-section" id="reserveSection">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Online Booking</span>
+        <h2 class="section-title">간편 시공 예약 & 사진 진단 신청</h2>
+        <p class="section-subtitle">산출된 견적으로 예약 정보를 입력하시면 담당 디테일러가 확인 후 즉시 확정 안내드립니다.</p>
+      </div>
+
+      <div class="reservation-form-container glass-box">
+        <form id="reservationForm">
+          
+          <!-- Selected Summary Ribbon inside Form -->
+          <div style="background:rgba(2,132,199,0.15);border:1px solid rgba(56,189,248,0.3);border-radius:var(--radius-md);padding:14px 18px;margin-bottom:22px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+            <div>
+              <span style="font-size:0.8rem;color:var(--text-muted);">선택된 시공 내역:</span>
+              <div id="formSelectedPanelsSummary" style="font-size:0.95rem;font-weight:800;color:var(--text-main);">
+                선택된 부위 없음 (견적기에서 선택해 주세요)
+              </div>
+            </div>
+            <div style="text-align:right;">
+              <span style="font-size:0.75rem;color:var(--text-muted);">최종 견적 금액</span>
+              <div id="formTotalPriceSummary" style="font-size:1.3rem;font-weight:900;color:var(--accent-cyan);">0원</div>
+            </div>
+          </div>
+
+          <!-- Customer Info Fields -->
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label" for="custName">고객 성명 <span class="req-star">*</span></label>
+              <div class="input-field-wrap">
+                <i data-lucide="user" class="field-icon"></i>
+                <input type="text" id="custName" class="form-input" placeholder="예: 홍길동" required>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="custPhone">연락처 (휴대폰 번호) <span class="req-star">*</span></label>
+              <div class="input-field-wrap">
+                <i data-lucide="phone" class="field-icon"></i>
+                <input type="tel" id="custPhone" class="form-input" placeholder="010-1234-5678" maxlength="13" required>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label" for="custCarPlate">차량번호 <span class="req-star">*</span></label>
+              <div class="input-field-wrap">
+                <i data-lucide="hash" class="field-icon"></i>
+                <input type="text" id="custCarPlate" class="form-input" placeholder="예: 123가 4567" required>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="custCarModel">차종 및 색상 <span class="req-star">*</span></label>
+              <div class="input-field-wrap">
+                <i data-lucide="car" class="field-icon"></i>
+                <input type="text" id="custCarModel" class="form-input" placeholder="예: 그랜저 GN7 / 블랙" required>
+              </div>
+            </div>
+          </div>
+
+          <!-- Service Method Selection -->
+          <div class="form-group">
+            <label class="form-label">시공 방식 선택 <span class="req-star">*</span></label>
+            <div class="service-method-grid">
+              <div class="method-radio-card active" data-method="shop">
+                <div class="method-radio-circle"></div>
+                <div>
+                  <div class="method-title">전문 디테일링 센터 입고 시공</div>
+                  <div class="method-desc">완벽한 조명 & 방진 부스에서 최고 퀄리티 작업 (대차/고객대기실 완비)</div>
+                </div>
+              </div>
+
+              <div class="method-radio-card" data-method="onsite">
+                <div class="method-radio-circle"></div>
+                <div>
+                  <div class="method-title">프리미엄 출장 케어 서비스</div>
+                  <div class="method-desc">지하주차장/자택으로 출장 방문 시공 (수도권/주요 거점 가능)</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Expected Date & Time Row -->
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label" for="reserveDate">희망 시공/입차 일자 <span class="req-star">*</span></label>
+              <div class="input-field-wrap">
+                <i data-lucide="calendar-days" class="field-icon"></i>
+                <input type="date" id="reserveDate" class="form-input" required>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="reserveTime">희망 시공/입차 시간 <span class="req-star">*</span></label>
+              <div class="input-field-wrap">
+                <i data-lucide="clock" class="field-icon"></i>
+                <select id="reserveTime" class="form-select" required>
+                  <option value="">희망 시간을 선택해 주세요</option>
+                  <option value="09:00">오전 09:00 (첫 입차)</option>
+                  <option value="11:00">오전 11:00</option>
+                  <option value="13:30">오후 01:30</option>
+                  <option value="15:30">오후 03:30</option>
+                  <option value="17:30">오후 05:30 (야간 작업 가능)</option>
+                  <option value="consult">시간 조율 상담 희망</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Service Location (For On-site or Drop-off Address) -->
+          <div class="form-group disabled-field" id="addressFormGroup">
+            <label class="form-label" for="serviceAddress">
+              <span>시공 희망 장소 / 출장 주소</span>
+              <span class="req-star" id="addressReqStar" style="display:none;">*</span>
+              <span class="address-status-tag shop" id="addressStatusTag">센터 입고 (매장 자동 배정)</span>
+            </label>
+            <div class="input-field-wrap">
+              <i data-lucide="map-pin" class="field-icon"></i>
+              <input type="text" id="serviceAddress" class="form-input" value="POLISH LAB 센터 본점 (서울 강남구 역삼로 123 전문 디테일링 센터)" disabled>
+            </div>
+            <p id="addressHintText" style="font-size:0.75rem;color:var(--text-dim);margin-top:4px;">
+              전문 디테일링 센터 방문 입고 시공으로 진행되며, 센터 주소가 자동으로 배정됩니다.
+            </p>
+          </div>
+
+          <!-- Photo Upload for Damage Assessment -->
+          <div class="form-group">
+            <label class="form-label">
+              <span>손상 부위 사진 첨부 (선택 사항)</span>
+              <span style="font-size:0.75rem;color:var(--accent-cyan);font-weight:normal;margin-left:6px;">(사진을 첨부해 주시면 더욱 정확한 사전 판정에 도움이 됩니다)</span>
+            </label>
+            <div class="photo-upload-dropzone" id="photoDropzone">
+              <input type="file" id="photoFileInput" accept="image/*" multiple style="display:none;">
+              <i data-lucide="camera" style="width:36px;height:36px;color:var(--accent-cyan);margin-bottom:8px;"></i>
+              <div style="font-size:0.95rem;font-weight:700;">상처 부위 사진을 클릭하여 업로드하세요</div>
+              <div style="font-size:0.78rem;color:var(--text-muted);margin-top:4px;">스마트폰으로 촬영한 흠집 부위 사진 (최대 4장)</div>
+            </div>
+            <div class="photo-preview-grid" id="photoPreviewGrid"></div>
+          </div>
+
+          <!-- Special Request Textarea -->
+          <div class="form-group">
+            <label class="form-label" for="custRemarks">특이사항 및 요청사항</label>
+            <textarea id="custRemarks" class="form-textarea" placeholder="차량 도색/PPF 시공 여부나 디테일러에게 전달하고 싶은 요청사항을 자유롭게 기재해 주세요."></textarea>
+          </div>
+
+          <!-- Terms Agreement -->
+          <div class="terms-agreement-box">
+            <div class="terms-agreement-flex">
+              <label class="term-checkbox-label" for="chkTerms">
+                <input type="checkbox" id="chkTerms" required checked>
+                <span><strong>[필수]</strong> 개인정보 수집·이용 및 부분광택 시공 안내 약관에 동의합니다.</span>
+              </label>
+              <button type="button" class="btn-view-terms" onclick="openTermsModal()">
+                <span>약관 상세 확인</span>
+                <i data-lucide="chevron-right" style="width:14px;height:14px;"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Submit Button -->
+          <button type="submit" class="btn-proceed-reserve" style="font-size:1.15rem;padding:18px;">
+            <i data-lucide="send" style="width:20px;height:20px;"></i>
+            <span>부분광택 예약 확정 및 디지털 견적서 발급</span>
+          </button>
+
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ Accordion Section -->
+  <section class="faq-section" id="faqSection">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">FAQ & Answers</span>
+        <h2 class="section-title">자주 묻는 질문</h2>
+        <p class="section-subtitle">부분광택에 대해 고객님들이 가장 궁금해하시는 점들을 정리했습니다.</p>
+      </div>
+
+      <div class="faq-list">
+        <div class="faq-item">
+          <div class="faq-question">
+            <span>Q. 부분광택 시공 시 기존 도장면과 색상 차이나 경계면이 생기지 않나요?</span>
+            <i data-lucide="chevron-down" class="faq-icon"></i>
+          </div>
+          <div class="faq-answer">
+            도색(재도장)과 달리, 부분광택은 차량 본래의 순정 클리어코트 층의 스크래치를 정밀 연마하여 복원하는 작업입니다. 따라서 색상 불일치나 단차가 전혀 발생하지 않으며 본래의 신차 도장 질감과 완벽히 일치합니다.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">
+            <span>Q. 손톱에 걸리는 아주 깊은 흠집도 100% 지워지나요?</span>
+            <i data-lucide="chevron-down" class="faq-icon"></i>
+          </div>
+          <div class="faq-answer">
+            클리어코트를 뚫고 하도(철판/플라스틱)까지 완전히 파인 흠집은 광택만으로는 100% 면 복원이 어려울 수 있습니다. 이 경우 폴리시랩 특수 붓페인트 레벨링 샌딩 공법을 병행하여 90% 이상 눈에 띄지 않도록 완벽에 가깝게 완화 복원해 드립니다.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">
+            <span>Q. 시공 소요 시간은 부위당 얼마나 걸리나요?</span>
+            <i data-lucide="chevron-down" class="faq-icon"></i>
+          </div>
+          <div class="faq-answer">
+            1개 부위(예: 도어 1판 or 범퍼 코너) 기준 약 40분~1시간 정도 소요되며, 3개 이상 다부위 시공 시 약 2시간~3시간 내외로 당일 즉시 출고 가능합니다.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">
+            <span>Q. 비가 오거나 야외 주차장에서도 출장 시공이 가능한가요?</span>
+            <i data-lucide="chevron-down" class="faq-icon"></i>
+          </div>
+          <div class="faq-answer">
+            광택 작업은 정밀 조명과 분진 관리가 필요하므로, 출장 케어의 경우 아파트/오피스텔 지하주차장 또는 비가 들이치지 않는 실내 공간에서 최상의 퀄리티로 진행됩니다.
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <div class="footer-brand-title">POLISH LAB</div>
+          <p>고객 전용 프리미엄 스마트 부분광택 & 스크래치 복원 전문 플랫폼</p>
+          <div class="footer-contact-item" style="margin-top:14px;">
+            <i data-lucide="phone" style="width:16px;height:16px;color:var(--accent-cyan);"></i>
+            <span>고객센터 & 긴급 예약: 010-7246-7211</span>
+          </div>
+          <div class="footer-contact-item">
+            <i data-lucide="clock" style="width:16px;height:16px;color:var(--accent-cyan);"></i>
+            <span>운영 시간: 연중무휴 08:30 ~ 21:00 (야간 입고 가능)</span>
+          </div>
+        </div>
+
+        <div>
+          <h4 style="color:#fff;margin-bottom:12px;">바로가기 서비스</h4>
+          <p><a href="#studioSection" style="display:block;margin-bottom:6px;">실시간 부분광택 견적기</a></p>
+          <p><a href="#beforeAfterSection" style="display:block;margin-bottom:6px;">비포 & 애프터 갤러리</a></p>
+          <p><a href="#reserveSection" style="display:block;margin-bottom:6px;">온라인 시공 예약</a></p>
+          <p><a href="javascript:void(0)" onclick="openLookupModal()" style="display:block;color:var(--accent-cyan);">내 예약/견적 조회</a></p>
+        </div>
+
+        <div>
+          <h4 style="color:#fff;margin-bottom:12px;">품질 안심 보증제</h4>
+          <p>수성 듀얼 폴리싱으로 도장 손상 제로</p>
+          <p>부위별 정찰제 및 투명 견적서 보장</p>
+          <p>시공 후 1년간 광택 품질 무상 A/S 지원</p>
+        </div>
+      </div>
+
+      <div class="footer-copyright">
+        © 2026 POLISH LAB Corp. All rights reserved. | 고객 전용 스마트 부분광택 플랫폼
+      </div>
+    </div>
+  </footer>
+
+  <!-- Mobile Sticky Bottom Bar -->
+  <div class="mobile-bottom-bar" id="mobileBottomBar">
+    <div class="mobile-bar-content">
+      <div class="mobile-price-wrap">
+        <div class="m-lbl">선택 부위 (<span id="mobilePanelCount">0</span>개) 견적</div>
+        <div class="m-amt" id="mobilePriceDisplay">0원</div>
+      </div>
+      <a href="#reserveSection" class="btn-mobile-reserve">
+        <span>예약하기</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- Modal: Official Digital Voucher / Receipt -->
+  <div class="modal-overlay hidden" id="voucherModal">
+    <div class="modal-container">
+      <div class="modal-header">
+        <div class="modal-title">
+          <i data-lucide="file-check-2" style="color:var(--accent-cyan);"></i>
+          <span>부분광택 예약 확정 & 공식 견적서</span>
+        </div>
+        <div class="modal-close-btn" onclick="closeVoucherModal()">
+          <i data-lucide="x" style="width:22px;height:22px;"></i>
+        </div>
+      </div>
+
+      <div class="modal-body">
+        <div class="digital-receipt-doc" id="voucherModalDoc">
+          <div class="receipt-header-branding">
+            <div class="receipt-brand-title">POLISH LAB</div>
+            <div class="receipt-doc-name">프리미엄 부분광택 시공 의뢰 및 견적 확인서</div>
+            <div style="font-size:0.75rem;color:#64748b;margin-top:4px;">문서 발급번호: <span id="docBookingId">PL-2026-0001</span> | 발급일시: <span id="docIssuedAt">-</span></div>
+          </div>
+
+          <table class="receipt-table">
+            <tbody>
+              <tr>
+                <th>고객명</th>
+                <td id="docCustName">-</td>
+                <th>연락처</th>
+                <td id="docCustPhone">-</td>
+              </tr>
+              <tr>
+                <th>차종 / 색상</th>
+                <td id="docCustCar">-</td>
+                <th>차량번호</th>
+                <td id="docCustPlate" style="font-weight:800;color:#0284c7;">-</td>
+              </tr>
+              <tr>
+                <th>시공 일시</th>
+                <td colspan="3" id="docSchedule">-</td>
+              </tr>
+              <tr>
+                <th>시공 장소/방식</th>
+                <td colspan="3" id="docLocation">-</td>
+              </tr>
+              <tr>
+                <th>선택 시공 부위</th>
+                <td colspan="3" id="docPanels" style="font-weight:700;color:#0f172a;">-</td>
+              </tr>
+              <tr>
+                <th>추가 케어 옵션</th>
+                <td colspan="3" id="docAddons">-</td>
+              </tr>
+              <tr>
+                <th>손상도 판정</th>
+                <td colspan="3" id="docDamageLevel">-</td>
+              </tr>
+              <tr class="receipt-total-highlight">
+                <th style="background:#bae6fd;color:#0369a1;">최종 합계 금액</th>
+                <td colspan="3" style="font-size:1.2rem;font-weight:900;color:#0284c7;" id="docTotalPrice">0원</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div style="font-size:0.75rem;color:#64748b;line-height:1.45;background:#f8fafc;padding:10px;border-radius:6px;border:1px solid #e2e8f0;">
+            • 본 견적서는 POLISH LAB 공식 정찰 기준에 따라 투명하게 산출되었습니다.<br>
+            • 예약 변경 및 취소는 시공 24시간 전까지 고객센터(010-7246-7211)로 연락 부탁드립니다.<br>
+            • 시공 완료 후 1년간 도장면 광택 품질 무상 보증서가 발급됩니다.
+          </div>
+        </div>
+
+        <div class="modal-actions-row">
+          <button class="btn-secondary" onclick="copyVoucherKakaoText()">
+            <i data-lucide="copy" style="width:16px;height:16px;vertical-align:middle;margin-right:4px;"></i>
+            카카오톡/문자 복사
+          </button>
+          <button class="btn-primary" onclick="window.print()">
+            <i data-lucide="printer" style="width:16px;height:16px;vertical-align:middle;margin-right:4px;"></i>
+            견적서 인쇄 / PDF 저장
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Customer Reservation Lookup Modal -->
+  <div class="modal-overlay hidden" id="lookupModal">
+    <div class="modal-container">
+      <div class="modal-header">
+        <div class="modal-title">
+          <i data-lucide="search" style="color:var(--accent-cyan);"></i>
+          <span>내 예약 & 견적 내역 간편 조회</span>
+        </div>
+        <div class="modal-close-btn" onclick="closeLookupModal()">
+          <i data-lucide="x" style="width:22px;height:22px;"></i>
+        </div>
+      </div>
+
+      <div class="modal-body">
+        <div style="margin-bottom:18px;">
+          <p style="font-size:0.88rem;color:var(--text-muted);margin-bottom:12px;">
+            예약 시 입력하신 <strong>고객 성명</strong>과 <strong>휴대폰 번호</strong>를 입력해 주세요.
+          </p>
+          <div class="form-grid-2">
+            <div class="input-field-wrap">
+              <i data-lucide="user" class="field-icon"></i>
+              <input type="text" id="lookupName" class="form-input" placeholder="고객 성명">
+            </div>
+            <div class="input-field-wrap">
+              <i data-lucide="phone" class="field-icon"></i>
+              <input type="tel" id="lookupPhone" class="form-input" placeholder="연락처 (뒤 4자리 또는 전체)">
+            </div>
+          </div>
+          <button class="btn-primary" style="width:100%;margin-top:10px;padding:12px;" onclick="searchCustomerReservation()">
+            <i data-lucide="search" style="width:16px;height:16px;vertical-align:middle;margin-right:4px;"></i>
+            내 예약 내역 찾기
+          </button>
+        </div>
+
+        <div id="lookupResultArea">
+          <!-- Populated dynamically -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Terms & Policy Modal -->
+  <div class="modal-overlay hidden" id="termsModal">
+    <div class="modal-container" style="max-width: 680px;">
+      <div class="modal-header">
+        <div class="modal-title">
+          <i data-lucide="file-text" style="color:var(--accent-cyan);"></i>
+          <span>POLISH LAB 시공 안내 및 개인정보 처리약관</span>
+        </div>
+        <div class="modal-close-btn" onclick="closeTermsModal()">
+          <i data-lucide="x" style="width:22px;height:22px;"></i>
+        </div>
+      </div>
+
+      <div class="modal-body" style="max-height: 72vh; overflow-y: auto;">
+        <div class="terms-content-doc">
+          <h4 class="terms-sec-title">1. 개인정보 수집 및 이용 동의 (필수)</h4>
+          <table class="terms-table">
+            <tbody>
+              <tr>
+                <th>수집 목적</th>
+                <td>부분광택 맞춤 실시간 견적 산출, 예약 접수 및 확정 안내, 시공 상담 및 품질 보증 관리</td>
+              </tr>
+              <tr>
+                <th>수집 항목</th>
+                <td>고객 성명, 휴대폰 번호, 차량번호, 차종 및 색상, 시공 희망 장소/주소(출장 시), 손상 부위 첨부 사진</td>
+              </tr>
+              <tr>
+                <th>보유 및 이용 기간</th>
+                <td>시공 완료 및 견적 발급일로부터 1년 보관 후 안전하게 파기 (전자상거래 등에서의 소비자보호 법령 준수)</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h4 class="terms-sec-title" style="margin-top: 22px;">2. 부분광택 시공 범위 및 복원 안내</h4>
+          <ul class="terms-bullet-list">
+            <li><strong>정밀 수성 듀얼 폴리싱</strong>: 본 시공은 클리어코트를 깎아내지 않는 친환경 수성 듀얼 광택 공법으로 진행되어 도장 수명을 극대화합니다.</li>
+            <li><strong>복원 가능 범위</strong>: 도장면 상단의 스월마크, 워터스팟(물때), 산화막, 생활 잔기스, 주차장 벽면/기둥 마찰 쓸림 및 타 차량 페인트 이물질 묻음은 95~100% 원상 복원됩니다.</li>
+            <li><strong>깊은 파임 흠집 안내</strong>: 클리어코트를 관통하여 하도(철판/플라스틱)가 드러난 깊은 파임 상처는 단차를 완화하는 터치업 레벨링으로 시각적 개선을 진행하며, 100% 완전 단차 평탄화는 재도색/판금이 필요할 수 있습니다.</li>
+            <li><strong>기존 외관 하자 면책</strong>: 시공 전 이미 존재하던 스톤칩(돌빵), 도장면 깨짐, 칠 터짐 등 기존 하자는 사전 진단 후 고지되며 시공 보상 대상에서 제외됩니다.</li>
+          </ul>
+
+          <h4 class="terms-sec-title" style="margin-top: 22px;">3. 예약 일정 변경 및 출장 작업 환경</h4>
+          <ul class="terms-bullet-list">
+            <li><strong>예약 변경 및 취소</strong>: 시공 예정일 24시간 전까지 고객센터(010-7246-7211)를 통해 위약금 없이 일정 변경 및 취소가 가능합니다.</li>
+            <li><strong>출장 시공 환경</strong>: 프리미엄 출장 케어 선택 시, 정밀 조명과 안전 작업을 위해 아파트/자택 지하주차장 등 비·눈이 들이치지 않는 실내 공간이 확보되어야 합니다.</li>
+          </ul>
+
+          <h4 class="terms-sec-title" style="margin-top: 22px;">4. 1년 품질 안심 보증 정책</h4>
+          <ul class="terms-bullet-list">
+            <li>시공 완료 후 정상적인 관리 하에 시공 부위 광택 이상 또는 홀로그램 발생 시 1년간 무상 점검 및 A/S 재시공을 보증합니다.</li>
+          </ul>
+        </div>
+
+        <div class="modal-actions-row" style="margin-top: 22px;">
+          <button type="button" class="btn-primary" style="width: 100%;" onclick="confirmTermsAgreement()">
+            <i data-lucide="check-circle" style="width:16px;height:16px;vertical-align:middle;margin-right:4px;"></i>
+            약관 확인 및 동의 완료
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Main JavaScript Logic -->
+  <script src="app.js"></script>
+</body>
+</html>
