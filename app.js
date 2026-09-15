@@ -617,9 +617,223 @@ function initPhotoUploadDropzone() {
 }
 
 /* ==========================================================================
-   7. Online Reservation Form Handler
+   7. Interactive Custom Calendar Modal Logic
+   ========================================================================== */
+let calCurrentYear = new Date().getFullYear();
+let calCurrentMonth = new Date().getMonth(); // 0-indexed
+let calSelectedDate = null; // Date object
+
+const KOREAN_DAY_NAMES = ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일'];
+const KOREAN_DAY_SHORT = ['일', '월', '화', '수', '목', '금', '토'];
+
+function formatISODate(d) {
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return `${yyyy}-${mm}-${dd}`;
+}
+
+function formatKoreanDateDisplay(d) {
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  const dayName = KOREAN_DAY_SHORT[d.getDay()];
+  return `${yyyy}년 ${mm}월 ${dd}일 (${dayName})`;
+}
+
+function initCalendarPicker() {
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  calSelectedDate = tomorrow;
+  calCurrentYear = tomorrow.getFullYear();
+  calCurrentMonth = tomorrow.getMonth();
+
+  updateDateFormInputs(tomorrow);
+}
+
+function updateDateFormInputs(d) {
+  const isoStr = formatISODate(d);
+  const displayStr = formatKoreanDateDisplay(d);
+
+  const hiddenInput = document.getElementById('reserveDate');
+  const displayInput = document.getElementById('reserveDateDisplay');
+
+  if (hiddenInput) hiddenInput.value = isoStr;
+  if (displayInput) displayInput.value = displayStr;
+}
+
+window.openCalendarModal = function() {
+  const modal = document.getElementById('calendarModal');
+  if (!modal) return;
+
+  if (!calSelectedDate) {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    calSelectedDate = tomorrow;
+  }
+
+  calCurrentYear = calSelectedDate.getFullYear();
+  calCurrentMonth = calSelectedDate.getMonth();
+
+  renderCalendarGrid();
+  modal.classList.remove('hidden');
+  if (window.lucide) lucide.createIcons();
+};
+
+window.closeCalendarModal = function() {
+  const modal = document.getElementById('calendarModal');
+  if (modal) modal.classList.add('hidden');
+};
+
+window.navigateCalendarMonth = function(delta) {
+  calCurrentMonth += delta;
+  if (calCurrentMonth > 11) {
+    calCurrentMonth = 0;
+    calCurrentYear += 1;
+  } else if (calCurrentMonth < 0) {
+    calCurrentMonth = 11;
+    calCurrentYear -= 1;
+  }
+
+  // Prevent navigating to past months before current month
+  const today = new Date();
+  const minYear = today.getFullYear();
+  const minMonth = today.getMonth();
+  if (calCurrentYear < minYear || (calCurrentYear === minYear && calCurrentMonth < minMonth)) {
+    calCurrentYear = minYear;
+    calCurrentMonth = minMonth;
+  }
+
+  renderCalendarGrid();
+};
+
+function renderCalendarGrid() {
+  const titleEl = document.getElementById('calCurrentMonthTitle');
+  const gridEl = document.getElementById('calDaysGrid');
+  const infoEl = document.getElementById('calSelectedDateText');
+  const prevBtn = document.getElementById('calPrevMonthBtn');
+
+  if (titleEl) {
+    titleEl.textContent = `${calCurrentYear}년 ${calCurrentMonth + 1}월`;
+  }
+
+  // Disable prev button if already at current month
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  if (prevBtn) {
+    const isCurrentMonth = (calCurrentYear === today.getFullYear() && calCurrentMonth === today.getMonth());
+    prevBtn.disabled = isCurrentMonth;
+  }
+
+  if (!gridEl) return;
+  gridEl.innerHTML = '';
+
+  const firstDayIndex = new Date(calCurrentYear, calCurrentMonth, 1).getDay();
+  const daysInMonth = new Date(calCurrentYear, calCurrentMonth + 1, 0).getDate();
+
+  // Render empty leading cells
+  for (let i = 0; i < firstDayIndex; i++) {
+    const empty = document.createElement('div');
+    empty.className = 'cal-day-cell empty';
+    gridEl.appendChild(empty);
+  }
+
+  // Render day cells
+  for (let day = 1; day <= daysInMonth; day++) {
+    const cellDate = new Date(calCurrentYear, calCurrentMonth, day);
+    cellDate.setHours(0, 0, 0, 0);
+
+    const isPast = cellDate < today;
+    const isToday = cellDate.getTime() === today.getTime();
+    const isSelected = calSelectedDate && (formatISODate(cellDate) === formatISODate(calSelectedDate));
+    const dayOfWeek = cellDate.getDay();
+
+    const cell = document.createElement('div');
+    cell.className = 'cal-day-cell';
+    if (dayOfWeek === 0) cell.classList.add('sun');
+    if (dayOfWeek === 6) cell.classList.add('sat');
+    if (isToday) cell.classList.add('today');
+    if (isSelected) cell.classList.add('selected');
+    if (isPast) cell.classList.add('disabled');
+
+    cell.textContent = day;
+
+    if (!isPast) {
+      cell.addEventListener('click', () => {
+        selectCalendarDate(calCurrentYear, calCurrentMonth, day);
+      });
+    }
+
+    gridEl.appendChild(cell);
+  }
+
+  if (infoEl && calSelectedDate) {
+    const dayName = KOREAN_DAY_NAMES[calSelectedDate.getDay()];
+    infoEl.textContent = `${calSelectedDate.getFullYear()}년 ${String(calSelectedDate.getMonth() + 1).padStart(2, '0')}월 ${String(calSelectedDate.getDate()).padStart(2, '0')}일 (${dayName})`;
+  }
+}
+
+function selectCalendarDate(year, month, day) {
+  calSelectedDate = new Date(year, month, day);
+  calSelectedDate.setHours(0, 0, 0, 0);
+
+  // Clear preset chip active classes
+  document.querySelectorAll('.cal-preset-chip').forEach(c => c.classList.remove('active'));
+
+  renderCalendarGrid();
+}
+
+window.selectPresetDate = function(presetType) {
+  const target = new Date();
+  target.setHours(0, 0, 0, 0);
+
+  document.querySelectorAll('.cal-preset-chip').forEach(c => c.classList.remove('active'));
+
+  if (presetType === 'today') {
+    const btn = document.getElementById('presetToday');
+    if (btn) btn.classList.add('active');
+  } else if (presetType === 'tomorrow') {
+    target.setDate(target.getDate() + 1);
+    const btn = document.getElementById('presetTomorrow');
+    if (btn) btn.classList.add('active');
+  } else if (presetType === 'afterTomorrow') {
+    target.setDate(target.getDate() + 2);
+    const btn = document.getElementById('presetAfter');
+    if (btn) btn.classList.add('active');
+  } else if (presetType === 'weekend') {
+    const day = target.getDay();
+    const daysUntilSaturday = (6 - day + 7) % 7 || 7;
+    target.setDate(target.getDate() + daysUntilSaturday);
+    const btn = document.getElementById('presetWeekend');
+    if (btn) btn.classList.add('active');
+  }
+
+  calSelectedDate = target;
+  calCurrentYear = target.getFullYear();
+  calCurrentMonth = target.getMonth();
+
+  renderCalendarGrid();
+};
+
+window.confirmCalendarSelection = function() {
+  if (!calSelectedDate) {
+    showToast('날짜 선택 필요', '희망하시는 시공 날짜를 선택해 주세요.');
+    return;
+  }
+
+  updateDateFormInputs(calSelectedDate);
+  closeCalendarModal();
+
+  const formattedStr = formatKoreanDateDisplay(calSelectedDate);
+  showToast('시공 희망일 선택', `${formattedStr} 날짜가 선택되었습니다.`);
+};
+
+/* ==========================================================================
+   8. Online Reservation Form Handler
    ========================================================================== */
 function initReservationForm() {
+  initCalendarPicker();
+
   const form = document.getElementById('reservationForm');
   const proceedBtn = document.getElementById('btnProceedReserve');
 
@@ -634,18 +848,6 @@ function initReservationForm() {
       const reserveEl = document.getElementById('reserveSection');
       if (reserveEl) reserveEl.scrollIntoView({ behavior: 'smooth' });
     });
-  }
-
-  // Set default reserveDate to tomorrow
-  const dateInput = document.getElementById('reserveDate');
-  if (dateInput) {
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    const yyyy = tomorrow.getFullYear();
-    const mm = String(tomorrow.getMonth() + 1).padStart(2, '0');
-    const dd = String(tomorrow.getDate()).padStart(2, '0');
-    dateInput.min = `${yyyy}-${mm}-${dd}`;
-    dateInput.value = `${yyyy}-${mm}-${dd}`;
   }
 
   if (!form) return;

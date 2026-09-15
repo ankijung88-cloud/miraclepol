@@ -667,10 +667,14 @@
           <!-- Expected Date & Time Row -->
           <div class="form-grid-2">
             <div class="form-group">
-              <label class="form-label" for="reserveDate">희망 시공/입차 일자 <span class="req-star">*</span></label>
-              <div class="input-field-wrap">
+              <label class="form-label" for="reserveDateDisplay">희망 시공/입차 일자 <span class="req-star">*</span></label>
+              <div class="input-field-wrap custom-calendar-trigger" id="calendarPickerTrigger" onclick="openCalendarModal()" style="cursor:pointer;" title="클릭하여 달력에서 날짜를 선택하세요">
                 <i data-lucide="calendar-days" class="field-icon"></i>
-                <input type="date" id="reserveDate" class="form-input" required>
+                <input type="text" id="reserveDateDisplay" class="form-input" placeholder="날짜를 선택해 주세요 (달력 열기)" readonly style="cursor:pointer;font-weight:700;color:#fff;" required>
+                <input type="hidden" id="reserveDate" value="">
+                <button type="button" class="btn-input-calendar-icon" aria-label="달력 열기" style="background:transparent;border:none;color:var(--accent-cyan);cursor:pointer;padding:4px;display:flex;align-items:center;">
+                  <i data-lucide="calendar" style="width:18px;height:18px;"></i>
+                </button>
               </div>
             </div>
 
@@ -1045,6 +1049,80 @@
           <button type="button" class="btn-primary" style="width: 100%;" onclick="confirmTermsAgreement()">
             <i data-lucide="check-circle" style="width:16px;height:16px;vertical-align:middle;margin-right:4px;"></i>
             약관 확인 및 동의 완료
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Custom Interactive Calendar Modal -->
+  <div class="modal-overlay hidden" id="calendarModal">
+    <div class="modal-container calendar-modal-container">
+      <div class="modal-header">
+        <div class="modal-title">
+          <i data-lucide="calendar-heart" style="color:var(--accent-cyan);"></i>
+          <span>시공 희망 일자 선택</span>
+        </div>
+        <div class="modal-close-btn" onclick="closeCalendarModal()">
+          <i data-lucide="x" style="width:22px;height:22px;"></i>
+        </div>
+      </div>
+
+      <div class="modal-body calendar-modal-body">
+        <!-- Quick Select Preset Chips -->
+        <div class="calendar-presets-row">
+          <button type="button" class="cal-preset-chip" id="presetToday" onclick="selectPresetDate('today')">오늘</button>
+          <button type="button" class="cal-preset-chip active" id="presetTomorrow" onclick="selectPresetDate('tomorrow')">내일 (추천)</button>
+          <button type="button" class="cal-preset-chip" id="presetAfter" onclick="selectPresetDate('afterTomorrow')">모레</button>
+          <button type="button" class="cal-preset-chip" id="presetWeekend" onclick="selectPresetDate('weekend')">이번 주말</button>
+        </div>
+
+        <!-- Month Navigation Bar -->
+        <div class="cal-nav-bar">
+          <button type="button" class="cal-nav-btn" onclick="navigateCalendarMonth(-1)" id="calPrevMonthBtn" aria-label="이전 달">
+            <i data-lucide="chevron-left" style="width:18px;height:18px;"></i>
+          </button>
+          <div class="cal-current-month" id="calCurrentMonthTitle">
+            2026년 9월
+          </div>
+          <button type="button" class="cal-nav-btn" onclick="navigateCalendarMonth(1)" id="calNextMonthBtn" aria-label="다음 달">
+            <i data-lucide="chevron-right" style="width:18px;height:18px;"></i>
+          </button>
+        </div>
+
+        <!-- Weekdays Header -->
+        <div class="cal-weekdays-grid">
+          <div class="cal-weekday sun">일</div>
+          <div class="cal-weekday">월</div>
+          <div class="cal-weekday">화</div>
+          <div class="cal-weekday">수</div>
+          <div class="cal-weekday">목</div>
+          <div class="cal-weekday">금</div>
+          <div class="cal-weekday sat">토</div>
+        </div>
+
+        <!-- Days Grid -->
+        <div class="cal-days-grid" id="calDaysGrid">
+          <!-- Dynamically populated day cells -->
+        </div>
+
+        <!-- Selected Date Summary Info Box -->
+        <div class="cal-selected-info-box">
+          <div class="cal-info-icon">
+            <i data-lucide="calendar-check-2" style="width:20px;height:20px;color:var(--accent-cyan);"></i>
+          </div>
+          <div class="cal-info-text">
+            <span class="cal-info-label">선택된 시공 희망일</span>
+            <strong class="cal-info-val" id="calSelectedDateText">2026년 09월 16일 (수요일)</strong>
+          </div>
+        </div>
+
+        <!-- Modal Actions -->
+        <div class="modal-actions-row" style="margin-top: 18px; gap: 10px;">
+          <button type="button" class="btn-secondary" onclick="closeCalendarModal()" style="flex: 1;">닫기</button>
+          <button type="button" class="btn-primary" onclick="confirmCalendarSelection()" style="flex: 2;">
+            <i data-lucide="check" style="width:16px;height:16px;vertical-align:middle;margin-right:4px;"></i>
+            이 날짜로 선택 완료
           </button>
         </div>
       </div>
