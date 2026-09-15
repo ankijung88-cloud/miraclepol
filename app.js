@@ -742,9 +742,12 @@ function initReservationForm() {
 }
 
 async function sendBookingToGoogleSheets(record) {
-  if (!GOOGLE_SCRIPT_URL) return;
+  const gasUrl = localStorage.getItem('polishlab_gas_url') || GOOGLE_SCRIPT_URL;
+  if (!gasUrl) return;
+
   try {
-    await fetch(GOOGLE_SCRIPT_URL, {
+    // 1. Primary POST Webhook
+    await fetch(gasUrl, {
       method: 'POST',
       mode: 'no-cors',
       headers: {
@@ -754,7 +757,16 @@ async function sendBookingToGoogleSheets(record) {
     });
     showToast('구글 시트 연동', '구글 스프레드시트에 실시간 예약 데이터가 정상 등록되었습니다.');
   } catch (err) {
-    console.warn('Google Sheets sync error:', err);
+    console.warn('Google Sheets POST fallback to GET:', err);
+    try {
+      // 2. GET Query Fallback
+      const getUrl = gasUrl + (gasUrl.includes('?') ? '&' : '?') + 'action=book&payload=' + encodeURIComponent(JSON.stringify(record));
+      const img = new Image();
+      img.src = getUrl;
+      showToast('구글 시트 연동', '구글 스프레드시트에 실시간 예약 데이터가 백그라운드로 전송되었습니다.');
+    } catch (fallbackErr) {
+      console.error('GAS Fallback Error:', fallbackErr);
+    }
   }
 }
 

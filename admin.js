@@ -162,7 +162,6 @@ function initDashboardEvents() {
 
 function updateGasStatusUI(url) {
   const badge = document.getElementById('adminGasBadge');
-  const dot = document.getElementById('adminGasDot');
   if (!badge) return;
 
   if (url) {
@@ -224,6 +223,7 @@ window.testAdminGasPing = async function() {
   };
 
   try {
+    // 1. POST attempt
     await fetch(url, {
       method: 'POST',
       mode: 'no-cors',
@@ -233,150 +233,33 @@ window.testAdminGasPing = async function() {
     showAdminToast('테스트 전송 성공', '구글 시트에 테스트 데이터 행이 추가되었습니다!');
     setTimeout(loadDashboardData, 1200);
   } catch (err) {
-    console.error('Ping Error:', err);
-    showAdminToast('전송 실패', '전송 중 오류가 발생했습니다. Apps Script 배포 설정을 확인해 주세요.');
+    console.warn('Ping POST failed, attempting GET fallback:', err);
+    try {
+      // 2. GET fallback
+      const getUrl = url + (url.includes('?') ? '&' : '?') + 'action=book&payload=' + encodeURIComponent(JSON.stringify(testPayload));
+      const img = new Image();
+      img.src = getUrl;
+      showAdminToast('테스트 전송 성공', '구글 시트에 테스트 데이터가 전송되었습니다.');
+      setTimeout(loadDashboardData, 1200);
+    } catch (e) {
+      showAdminToast('전송 실패', '전송 중 오류가 발생했습니다. Apps Script 배포 설정을 확인해 주세요.');
+    }
   }
 };
 
-window.copyGASScriptCode = function() {
-  const scriptCode = `/**
- * POLISH LAB (폴리시랩) - 구글 스프레드시트 실시간 연동 Google Apps Script
- */
-var SHEET_NAME = "부분광택예약목록";
-var HEADERS = ["신청ID","신청일시","고객명","연락처","차량번호","차종및색상","차종구분","손상도레벨","시공방식","희망시공일시","시공장소/주소","선택시공부위","추가케어옵션","기본시공비","할인적용액","최종견적금액","예상소요시간","특이및요청사항","진행상태"];
-
-function doPost(e) {
+window.copyGASScriptCode = async function() {
   try {
-    var ss = SpreadsheetApp.getActiveSpreadsheet();
-    var sheet = ss.getSheetByName(SHEET_NAME);
-    if (!sheet) {
-      sheet = ss.insertSheet(SHEET_NAME);
-      initSheetHeader(sheet);
-    } else if (sheet.getLastRow() === 0) {
-      initSheetHeader(sheet);
-    }
-    var data = JSON.parse(e.postData.contents);
-    var panelsStr = Array.isArray(data.panels) ? data.panels.join(", ") : (data.panels || "-");
-    var addonsStr = Array.isArray(data.addons) ? (data.addons.length ? data.addons.join(", ") : "없음") : (data.addons || "없음");
-    var basePrice = data.priceSummary ? data.priceSummary.baseSum : (data.basePrice || 0);
-    var discountAmt = data.priceSummary ? data.priceSummary.discountAmount : (data.discountAmount || 0);
-    var finalTotal = data.priceSummary ? data.priceSummary.finalTotal : (data.finalTotal || 0);
-    var estTimeMin = data.priceSummary ? data.priceSummary.estTimeMin : (data.estTimeMin || 0);
-    var estTimeStr = estTimeMin > 0 ? (Math.floor(estTimeMin / 60) > 0 ? "약 " + Math.floor(estTimeMin / 60) + "시간 " + (estTimeMin % 60 ? (estTimeMin % 60) + "분" : "") : "약 " + estTimeMin + "분") : "-";
-
-    var newRow = [
-      data.id || ("PL-" + Utilities.formatDate(new Date(), "Asia/Seoul", "yyyyMMdd-HHmmss")),
-      data.createdAt || Utilities.formatDate(new Date(), "Asia/Seoul", "yyyy-MM-dd HH:mm"),
-      data.name || "",
-      data.phone || "",
-      data.plate || "",
-      data.carModel || "",
-      data.carClass || "",
-      data.damageLevel || "",
-      data.serviceMethod || "",
-      data.reserveSchedule || "",
-      data.address || "",
-      panelsStr,
-      addonsStr,
-      formatNumberKRW(basePrice),
-      formatNumberKRW(discountAmt),
-      formatNumberKRW(finalTotal),
-      estTimeStr,
-      data.remarks || "",
-      data.status || "예약 접수완료"
-    ];
-    sheet.appendRow(newRow);
-    var lastRow = sheet.getLastRow();
-    var range = sheet.getRange(lastRow, 1, 1, HEADERS.length);
-    range.setFontFamily("Pretendard").setFontSize(10).setVerticalAlignment("middle");
-    sheet.getRange(lastRow, 1).setFontWeight("bold").setFontColor("#0284C7");
-    sheet.getRange(lastRow, 16).setFontWeight("bold").setFontColor("#0369A1");
-
-    return ContentService.createTextOutput(JSON.stringify({ result: "success", id: newRow[0] })).setMimeType(ContentService.MimeType.JSON);
-  } catch (error) {
-    return ContentService.createTextOutput(JSON.stringify({ result: "error", message: error.toString() })).setMimeType(ContentService.MimeType.JSON);
-  }
-}
-
-function doGet(e) {
-  try {
-    var ss = SpreadsheetApp.getActiveSpreadsheet();
-    var sheet = ss.getSheetByName(SHEET_NAME);
-    if (!sheet || sheet.getLastRow() <= 1) return ContentService.createTextOutput(JSON.stringify({ result: "success", data: [] })).setMimeType(ContentService.MimeType.JSON);
-    var values = sheet.getDataRange().getValues();
-    var rows = values.slice(1);
-    var list = [];
-    for (var i = rows.length - 1; i >= 0; i--) {
-      var r = rows[i];
-      if (!r[0]) continue;
-      list.push({
-        id: String(r[0]),
-        createdAt: String(r[1]),
-        name: String(r[2]),
-        phone: String(r[3]),
-        plate: String(r[4]),
-        carModel: String(r[5]),
-        carClass: String(r[6]),
-        damageLevel: String(r[7]),
-        serviceMethod: String(r[8]),
-        reserveSchedule: String(r[9]),
-        address: String(r[10]),
-        panels: String(r[11]).split(", "),
-        addons: String(r[12]) === "없음" ? [] : String(r[12]).split(", "),
-        priceSummary: { finalTotal: parseKRWToNumber(String(r[15])) },
-        estTime: String(r[16]),
-        remarks: String(r[17]),
-        status: String(r[18] || "예약 접수완료")
+    const resp = await fetch('google-apps-script.js');
+    if (resp.ok) {
+      const code = await resp.text();
+      navigator.clipboard.writeText(code).then(() => {
+        showAdminToast('코드 복사 완료', '최신 Google Apps Script 전체 코드가 클립보드에 복사되었습니다.');
       });
+      return;
     }
-    return ContentService.createTextOutput(JSON.stringify({ result: "success", data: list })).setMimeType(ContentService.MimeType.JSON);
-  } catch (error) {
-    return ContentService.createTextOutput(JSON.stringify({ result: "error", message: error.toString() })).setMimeType(ContentService.MimeType.JSON);
+  } catch (err) {
+    console.warn('Fetch google-apps-script.js failed:', err);
   }
-}
-
-function initSheetHeader(sheet) {
-  sheet.clear();
-  sheet.appendRow(HEADERS);
-  var headerRange = sheet.getRange(1, 1, 1, HEADERS.length);
-  headerRange.setBackground("#0F172A").setFontColor("#38BDF8").setFontWeight("bold").setFontSize(10).setHorizontalAlignment("center").setVerticalAlignment("middle");
-  sheet.setRowHeight(1, 36);
-  sheet.setFrozenRows(1);
-  sheet.setColumnWidth(1, 140);
-  sheet.setColumnWidth(2, 130);
-  sheet.setColumnWidth(3, 90);
-  sheet.setColumnWidth(4, 120);
-  sheet.setColumnWidth(5, 110);
-  sheet.setColumnWidth(6, 150);
-  sheet.setColumnWidth(7, 120);
-  sheet.setColumnWidth(8, 140);
-  sheet.setColumnWidth(9, 140);
-  sheet.setColumnWidth(10, 140);
-  sheet.setColumnWidth(11, 240);
-  sheet.setColumnWidth(12, 180);
-  sheet.setColumnWidth(13, 160);
-  sheet.setColumnWidth(14, 100);
-  sheet.setColumnWidth(15, 100);
-  sheet.setColumnWidth(16, 120);
-  sheet.setColumnWidth(17, 100);
-  sheet.setColumnWidth(18, 180);
-  sheet.setColumnWidth(19, 100);
-}
-
-function formatNumberKRW(num) {
-  var n = Number(num) || 0;
-  return n.toLocaleString() + "원";
-}
-
-function parseKRWToNumber(str) {
-  if (!str) return 0;
-  var clean = str.replace(/[^0-9]/g, "");
-  return Number(clean) || 0;
-}`;
-
-  navigator.clipboard.writeText(scriptCode).then(() => {
-    showAdminToast('코드 복사 완료', 'Google Apps Script 전체 코드가 복사되었습니다.');
-  });
 };
 
 /* ==========================================================================
@@ -481,7 +364,7 @@ function renderBookingsTable() {
   if (filtered.length === 0) {
     tbody.innerHTML = `
       <tr>
-        <td colspan="8" style="text-align:center;padding:40px;color:var(--text-muted);">
+        <td colspan="9" style="text-align:center;padding:40px;color:var(--text-muted);">
           <i data-lucide="inbox" style="width:36px;height:36px;margin-bottom:8px;"></i>
           <div>조회된 예약 신청 내역이 없습니다.</div>
         </td>
