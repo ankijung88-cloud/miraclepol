@@ -262,31 +262,44 @@ window.copyGASScriptCode = async function() {
   }
 };
 
-/* ==========================================================================
-   3. Real-Time Data Fetching & KPI Calculations
-   ========================================================================== */
-window.loadDashboardData = async function() {
-  const localList = JSON.parse(localStorage.getItem('polishlab_bookings') || '[]');
-  allBookingsData = [...localList];
+let pollingIntervalId = null;
 
+/* ==========================================================================
+   3. Real-Time Data Fetching & KPI Calculations (Google Sheets as SSOT)
+   ========================================================================== */
+window.loadDashboardData = async function(isSilent = false) {
   const gasUrl = localStorage.getItem('polishlab_gas_url');
+  const refreshBtn = document.querySelector('button[onclick="loadDashboardData()"]');
+  if (refreshBtn && !isSilent) {
+    refreshBtn.classList.add('loading');
+    const icon = refreshBtn.querySelector('i');
+    if (icon) icon.style.animation = 'spin 0.8s linear infinite';
+  }
+
   if (gasUrl) {
     try {
-      const resp = await fetch(gasUrl);
+      const qUrl = gasUrl + (gasUrl.includes('?') ? '&' : '?') + '_t=' + Date.now();
+      const resp = await fetch(qUrl);
       if (resp.ok) {
         const json = await resp.json();
         if (json.result === 'success' && Array.isArray(json.data)) {
-          // Merge remote records with local records
-          json.data.forEach(remoteItem => {
-            if (!allBookingsData.some(b => b.id === remoteItem.id)) {
-              allBookingsData.push(remoteItem);
-            }
-          });
+          // Google Sheets is the Single Source of Truth
+          allBookingsData = json.data;
+          // Update local cache
+          localStorage.setItem('polishlab_bookings', JSON.stringify(json.data));
+          if (!isSilent) {
+            showAdminToast('구글 시트 동기화 완료', `구글 스프레드시트에서 ${allBookingsData.length}건의 실시간 예약 데이터를 불러왔습니다.`);
+          }
         }
       }
     } catch (err) {
-      console.warn('Remote GAS fetch fallback:', err);
+      console.warn('Google Sheets fetch failed, falling back to local cache:', err);
+      const localList = JSON.parse(localStorage.getItem('polishlab_bookings') || '[]');
+      allBookingsData = [...localList];
     }
+  } else {
+    const localList = JSON.parse(localStorage.getItem('polishlab_bookings') || '[]');
+    allBookingsData = [...localList];
   }
 
   // Sort by createdAt descending
@@ -295,6 +308,24 @@ window.loadDashboardData = async function() {
   updateKPICards();
   renderBookingsTable();
   if (window.lucide) lucide.createIcons();
+
+  if (refreshBtn && !isSilent) {
+    setTimeout(() => {
+      refreshBtn.classList.remove('loading');
+      const icon = refreshBtn.querySelector('i');
+      if (icon) icon.style.animation = '';
+    }, 400);
+  }
+
+  // Auto-polling setup (every 8 seconds)
+  if (!pollingIntervalId) {
+    pollingIntervalId = setInterval(() => {
+      const isAuth = sessionStorage.getItem('polishlab_admin_auth') === 'true';
+      if (isAuth && localStorage.getItem('polishlab_gas_url')) {
+        window.loadDashboardData(true);
+      }
+    }, 8000);
+  }
 };
 
 function updateKPICards() {
@@ -456,21 +487,53 @@ window.closeDetailModal = function() {
   if (modal) modal.classList.add('hidden');
 };
 
-window.saveBookingStatusChange = function() {
+window.saveBookingStatusChange = async function() {
   if (!currentDetailItem) return;
   const newStatus = document.getElementById('modalStatusSelect').value;
+  const bookingId = currentDetailItem.id;
 
   currentDetailItem.status = newStatus;
 
-  // Update in localStorage
+  // 1. Update in local storage cache
   const localList = JSON.parse(localStorage.getItem('polishlab_bookings') || '[]');
-  const idx = localList.findIndex(b => b.id === currentDetailItem.id);
+  const idx = localList.findIndex(b => b.id === bookingId);
   if (idx !== -1) {
     localList[idx].status = newStatus;
     localStorage.setItem('polishlab_bookings', JSON.stringify(localList));
   }
 
-  showAdminToast('상태 변경 완료', `예약 상태가 [${newStatus}](으)로 업데이트되었습니다.`);
+  // 2. Real-time sync with Google Spreadsheet
+  const gasUrl = localStorage.getItem('polishlab_gas_url');
+  if (gasUrl) {
+    showAdminToast('스프레드시트 동기화 중', `구글 스프레드시트 S열 상태를 [${newStatus}](으)로 반영하고 있습니다...`);
+    try {
+      // POST Attempt
+      await fetch(gasUrl, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({
+          action: 'updateStatus',
+          id: bookingId,
+          status: newStatus
+        })
+      });
+      showAdminToast('상태 변경 완료', `구글 스프레드시트 및 관제 시스템 상태가 [${newStatus}](으)로 반영되었습니다.`);
+    } catch (err) {
+      console.warn('POST status update failed, trying GET fallback:', err);
+      try {
+        const getUrl = gasUrl + (gasUrl.includes('?') ? '&' : '?') + 'action=updateStatus&id=' + encodeURIComponent(bookingId) + '&status=' + encodeURIComponent(newStatus) + '&_t=' + Date.now();
+        const img = new Image();
+        img.src = getUrl;
+        showAdminToast('상태 변경 완료', `구글 스프레드시트에 상태 변경 요청이 전송되었습니다.`);
+      } catch (e) {
+        console.error('GAS status update failed:', e);
+      }
+    }
+  } else {
+    showAdminToast('상태 변경 완료', `예약 상태가 [${newStatus}](으)로 업데이트되었습니다.`);
+  }
+
   closeDetailModal();
   updateKPICards();
   renderBookingsTable();

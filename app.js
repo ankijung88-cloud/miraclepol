@@ -938,9 +938,10 @@ window.searchCustomerReservation = async function() {
 
   // Try Google Sheets GET lookup if URL is set
   let isGoogleSheetsSynced = false;
-  if (GOOGLE_SCRIPT_URL) {
+  const gasUrl = localStorage.getItem('polishlab_gas_url') || GOOGLE_SCRIPT_URL;
+  if (gasUrl) {
     try {
-      const qUrl = `${GOOGLE_SCRIPT_URL}?name=${encodeURIComponent(nameQuery)}&phone=${encodeURIComponent(phoneQuery)}`;
+      const qUrl = `${gasUrl}${gasUrl.includes('?') ? '&' : '?'}name=${encodeURIComponent(nameQuery)}&phone=${encodeURIComponent(phoneQuery)}&_t=${Date.now()}`;
       const resp = await fetch(qUrl);
       if (resp.ok) {
         const json = await resp.json();
@@ -950,7 +951,7 @@ window.searchCustomerReservation = async function() {
         }
       }
     } catch (err) {
-      console.warn('Google Sheets GET lookup fallback to local:', err);
+      console.warn('Google Sheets lookup failed, falling back to localStorage:', err);
     }
   }
 
