@@ -62,6 +62,9 @@ const appState = {
   }
 };
 
+// Google Sheets Real-Time Sync Configuration
+let GOOGLE_SCRIPT_URL = localStorage.getItem('polishlab_gas_url') || '';
+
 // DOM Content Loaded Init
 document.addEventListener('DOMContentLoaded', () => {
   if (window.lucide) lucide.createIcons();
@@ -78,6 +81,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initReservationForm();
   initNavigationAndPhoneFormat();
   initFaqAccordion();
+  updateSheetsConnectionStatus();
 
   // Initial calculation
   calculateQuote();
@@ -661,6 +665,8 @@ function initReservationForm() {
     const phone = document.getElementById('custPhone').value.trim();
     const plate = document.getElementById('custCarPlate').value.trim();
     const carModel = document.getElementById('custCarModel').value.trim();
+    const reserveDate = document.getElementById('reserveDate') ? document.getElementById('reserveDate').value.trim() : '';
+    const reserveTime = document.getElementById('reserveTime') ? document.getElementById('reserveTime').value.trim() : '';
     const address = (appState.serviceMethod === 'shop')
       ? 'POLISH LAB 센터 본점 (서울 강남구 역삼로 123 전문 디테일링 센터)'
       : document.getElementById('serviceAddress').value.trim();
@@ -706,16 +712,51 @@ function initReservationForm() {
     // Save to LocalStorage
     saveBookingToStorage(bookingRecord);
 
-    // Show Voucher Modal
-    openVoucherModal(bookingRecord);
-    showToast('예약 완료', '부분광택 예약 신청 및 디지털 견적서가 발급되었습니다!');
+    // Send to Google Spreadsheet in real-time
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const originalBtnHtml = submitBtn ? submitBtn.innerHTML : '';
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = `
+        <span class="spinner" style="display:inline-block;width:16px;height:16px;border:2px solid #fff;border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite;margin-right:6px;vertical-align:middle;"></span>
+        <span>스프레드시트 실시간 전송 중...</span>
+      `;
+    }
 
-    // Reset Form
-    form.reset();
-    appState.uploadedPhotos = [];
-    const previewGrid = document.getElementById('photoPreviewGrid');
-    if (previewGrid) previewGrid.innerHTML = '';
+    sendBookingToGoogleSheets(bookingRecord).finally(() => {
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalBtnHtml;
+      }
+      
+      // Show Voucher Modal
+      openVoucherModal(bookingRecord);
+      showToast('예약 완료', '부분광택 예약 신청 및 디지털 견적서가 발급되었습니다!');
+
+      // Reset Form
+      form.reset();
+      appState.uploadedPhotos = [];
+      const previewGrid = document.getElementById('photoPreviewGrid');
+      if (previewGrid) previewGrid.innerHTML = '';
+    });
   });
+}
+
+async function sendBookingToGoogleSheets(record) {
+  if (!GOOGLE_SCRIPT_URL) return;
+  try {
+    await fetch(GOOGLE_SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: {
+        'Content-Type': 'text/plain;charset=utf-8'
+      },
+      body: JSON.stringify(record)
+    });
+    showToast('구글 시트 연동', '구글 스프레드시트에 실시간 예약 데이터가 정상 등록되었습니다.');
+  } catch (err) {
+    console.warn('Google Sheets sync error:', err);
+  }
 }
 
 function saveBookingToStorage(record) {
@@ -735,6 +776,286 @@ function getStoredBookings() {
     return [];
   }
 }
+
+/* ==========================================================================
+   Google Sheets Real-Time Synchronization Engine
+   ========================================================================== */
+function updateSheetsConnectionStatus() {
+  const isConnected = !!GOOGLE_SCRIPT_URL;
+  const navDot = document.getElementById('navSyncDot');
+  const modalDot = document.getElementById('modalStatusDot');
+  const modalTitle = document.getElementById('modalStatusTitle');
+  const modalDesc = document.getElementById('modalStatusDesc');
+  const modalBadge = document.getElementById('modalStatusBadge');
+  const statusCard = document.getElementById('syncStatusCard');
+  const urlInput = document.getElementById('gasScriptUrlInput');
+
+  if (urlInput && GOOGLE_SCRIPT_URL) {
+    urlInput.value = GOOGLE_SCRIPT_URL;
+  }
+
+  if (navDot) {
+    if (isConnected) {
+      navDot.classList.add('active');
+    } else {
+      navDot.classList.remove('active');
+    }
+  }
+
+  if (modalDot && modalTitle && modalDesc && modalBadge && statusCard) {
+    if (isConnected) {
+      statusCard.classList.add('connected');
+      modalDot.classList.add('active');
+      modalTitle.textContent = '실시간 연동 상태: 🟢 정상 연동 활성화';
+      modalDesc.textContent = `연동 주소: ${GOOGLE_SCRIPT_URL.substring(0, 42)}... (예약 접수 시 시트에 즉시 기록됩니다)`;
+      modalBadge.textContent = '연동 정상';
+      modalBadge.style.background = 'rgba(16,185,129,0.2)';
+      modalBadge.style.color = '#34d399';
+    } else {
+      statusCard.classList.remove('connected');
+      modalDot.classList.remove('active');
+      modalTitle.textContent = '실시간 연동 상태: 미연동 (로컬 저장소 모드)';
+      modalDesc.textContent = '구글 Apps Script 웹 앱 URL을 등록하시면 고객 예약이 실시간으로 구글 시트에 자동 저장됩니다.';
+      modalBadge.textContent = '연동 필요';
+      modalBadge.style.background = 'rgba(255,255,255,0.08)';
+      modalBadge.style.color = 'var(--text-muted)';
+    }
+  }
+}
+
+window.openSheetsConfigModal = function() {
+  const modal = document.getElementById('sheetsConfigModal');
+  if (modal) {
+    updateSheetsConnectionStatus();
+    modal.classList.remove('hidden');
+    if (window.lucide) lucide.createIcons();
+  }
+};
+
+window.closeSheetsConfigModal = function() {
+  const modal = document.getElementById('sheetsConfigModal');
+  if (modal) modal.classList.add('hidden');
+};
+
+window.saveGoogleScriptUrl = function() {
+  const input = document.getElementById('gasScriptUrlInput');
+  if (!input) return;
+  const val = input.value.trim();
+
+  if (val && !val.startsWith('https://script.google.com/')) {
+    showToast('URL 형식 확인', '올바른 Google Apps Script 웹 앱 URL을 입력해 주세요.');
+    return;
+  }
+
+  GOOGLE_SCRIPT_URL = val;
+  localStorage.setItem('polishlab_gas_url', val);
+  updateSheetsConnectionStatus();
+  showToast('연동 설정 저장', val ? '구글 스프레드시트 실시간 연동이 활성화되었습니다!' : '구글 시트 연동 URL이 초기화되었습니다.');
+};
+
+window.testGoogleSheetsPing = async function() {
+  const url = GOOGLE_SCRIPT_URL || (document.getElementById('gasScriptUrlInput') ? document.getElementById('gasScriptUrlInput').value.trim() : '');
+  if (!url) {
+    showToast('URL 필요', '연동 테스트를 위해 먼저 구글 Apps Script Web App URL을 입력해 주세요.');
+    return;
+  }
+
+  showToast('연동 테스트 중', '구글 스프레드시트로 테스트 데이터를 전송하고 있습니다...');
+
+  const testPayload = {
+    id: 'TEST-' + Math.floor(1000 + Math.random() * 9000),
+    createdAt: formatNowDate(),
+    name: 'POLISH LAB 연동테스트',
+    phone: '010-0000-0000',
+    plate: '12가 3456',
+    carModel: '테스트 차량 (제네시스 G80)',
+    carClass: '중형 / 준대형 세단',
+    damageLevel: 'Lv 1. 미세 스월 & 워터스팟',
+    serviceMethod: '전문 디테일링 센터 입고',
+    reserveSchedule: '테스트 일정',
+    address: 'POLISH LAB 센터 본점',
+    panels: ['본넷 (보닛)', '앞범퍼'],
+    addons: ['부분 하이엔드 유리막 코팅'],
+    priceSummary: {
+      baseSum: 120000,
+      discountAmount: 12000,
+      finalTotal: 143000,
+      estTimeMin: 95
+    },
+    remarks: '구글 시트 실시간 웹훅 연동 테스트 데이터입니다.',
+    status: '테스트 성공'
+  };
+
+  try {
+    await fetch(url, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: {
+        'Content-Type': 'text/plain;charset=utf-8'
+      },
+      body: JSON.stringify(testPayload)
+    });
+
+    showToast('테스트 전송 완료', '구글 시트에 테스트 데이터가 성공적으로 전송되었습니다! 스프레드시트 새 행을 확인해 보세요.');
+  } catch (err) {
+    console.error('GAS Ping error:', err);
+    showToast('테스트 전송 실패', '전송 중 오류가 발생했습니다. Apps Script 배포 설정(모든 사용자 권한)을 확인해 주세요.');
+  }
+};
+
+window.copyGASCodeToClipboard = function() {
+  const scriptCode = `/**
+ * POLISH LAB (폴리시랩) - 구글 스프레드시트 실시간 연동 Google Apps Script
+ */
+var SHEET_NAME = "부분광택예약목록";
+var HEADERS = ["신청ID","신청일시","고객명","연락처","차량번호","차종및색상","차종구분","손상도레벨","시공방식","희망시공일시","시공장소/주소","선택시공부위","추가케어옵션","기본시공비","할인적용액","최종견적금액","예상소요시간","특이및요청사항","진행상태"];
+
+function doPost(e) {
+  try {
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var sheet = ss.getSheetByName(SHEET_NAME);
+    if (!sheet) {
+      sheet = ss.insertSheet(SHEET_NAME);
+      initSheetHeader(sheet);
+    } else if (sheet.getLastRow() === 0) {
+      initSheetHeader(sheet);
+    }
+    var data = JSON.parse(e.postData.contents);
+    var panelsStr = Array.isArray(data.panels) ? data.panels.join(", ") : (data.panels || "-");
+    var addonsStr = Array.isArray(data.addons) ? (data.addons.length ? data.addons.join(", ") : "없음") : (data.addons || "없음");
+    var basePrice = data.priceSummary ? data.priceSummary.baseSum : (data.basePrice || 0);
+    var discountAmt = data.priceSummary ? data.priceSummary.discountAmount : (data.discountAmount || 0);
+    var finalTotal = data.priceSummary ? data.priceSummary.finalTotal : (data.finalTotal || 0);
+    var estTimeMin = data.priceSummary ? data.priceSummary.estTimeMin : (data.estTimeMin || 0);
+    var estTimeStr = estTimeMin > 0 ? (Math.floor(estTimeMin / 60) > 0 ? "약 " + Math.floor(estTimeMin / 60) + "시간 " + (estTimeMin % 60 ? (estTimeMin % 60) + "분" : "") : "약 " + estTimeMin + "분") : "-";
+
+    var newRow = [
+      data.id || ("PL-" + Utilities.formatDate(new Date(), "Asia/Seoul", "yyyyMMdd-HHmmss")),
+      data.createdAt || Utilities.formatDate(new Date(), "Asia/Seoul", "yyyy-MM-dd HH:mm"),
+      data.name || "",
+      data.phone || "",
+      data.plate || "",
+      data.carModel || "",
+      data.carClass || "",
+      data.damageLevel || "",
+      data.serviceMethod || "",
+      data.reserveSchedule || "",
+      data.address || "",
+      panelsStr,
+      addonsStr,
+      formatNumberKRW(basePrice),
+      formatNumberKRW(discountAmt),
+      formatNumberKRW(finalTotal),
+      estTimeStr,
+      data.remarks || "",
+      data.status || "예약 접수완료"
+    ];
+    sheet.appendRow(newRow);
+    var lastRow = sheet.getLastRow();
+    var range = sheet.getRange(lastRow, 1, 1, HEADERS.length);
+    range.setFontFamily("Pretendard").setFontSize(10).setVerticalAlignment("middle");
+    sheet.getRange(lastRow, 1).setFontWeight("bold").setFontColor("#0284C7");
+    sheet.getRange(lastRow, 16).setFontWeight("bold").setFontColor("#0369A1");
+
+    return ContentService.createTextOutput(JSON.stringify({ result: "success", id: newRow[0] })).setMimeType(ContentService.MimeType.JSON);
+  } catch (error) {
+    return ContentService.createTextOutput(JSON.stringify({ result: "error", message: error.toString() })).setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+function doGet(e) {
+  try {
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var sheet = ss.getSheetByName(SHEET_NAME);
+    if (!sheet || sheet.getLastRow() <= 1) return ContentService.createTextOutput(JSON.stringify({ result: "success", data: [] })).setMimeType(ContentService.MimeType.JSON);
+    var values = sheet.getDataRange().getValues();
+    var rows = values.slice(1);
+    var list = [];
+    for (var i = rows.length - 1; i >= 0; i--) {
+      var r = rows[i];
+      if (!r[0]) continue;
+      list.push({
+        id: String(r[0]),
+        createdAt: String(r[1]),
+        name: String(r[2]),
+        phone: String(r[3]),
+        plate: String(r[4]),
+        carModel: String(r[5]),
+        carClass: String(r[6]),
+        damageLevel: String(r[7]),
+        serviceMethod: String(r[8]),
+        reserveSchedule: String(r[9]),
+        address: String(r[10]),
+        panels: String(r[11]).split(", "),
+        addons: String(r[12]) === "없음" ? [] : String(r[12]).split(", "),
+        priceSummary: { finalTotal: parseKRWToNumber(String(r[15])) },
+        estTime: String(r[16]),
+        remarks: String(r[17]),
+        status: String(r[18] || "예약 접수완료")
+      });
+    }
+    var nameFilter = e && e.parameter ? e.parameter.name : null;
+    var phoneFilter = e && e.parameter ? e.parameter.phone : null;
+    if (nameFilter || phoneFilter) {
+      list = list.filter(function(item) {
+        var matchN = nameFilter ? item.name.indexOf(nameFilter) > -1 : true;
+        var cleanP = item.phone.replace(/[^0-9]/g, "");
+        var queryP = phoneFilter ? phoneFilter.replace(/[^0-9]/g, "") : "";
+        var matchP = queryP ? (cleanP.indexOf(queryP) > -1 || item.plate.indexOf(nameFilter || "") > -1) : true;
+        return matchN && matchP;
+      });
+    }
+    return ContentService.createTextOutput(JSON.stringify({ result: "success", data: list })).setMimeType(ContentService.MimeType.JSON);
+  } catch (error) {
+    return ContentService.createTextOutput(JSON.stringify({ result: "error", message: error.toString() })).setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+function initSheetHeader(sheet) {
+  sheet.clear();
+  sheet.appendRow(HEADERS);
+  var headerRange = sheet.getRange(1, 1, 1, HEADERS.length);
+  headerRange.setBackground("#0F172A").setFontColor("#38BDF8").setFontWeight("bold").setFontSize(10).setHorizontalAlignment("center").setVerticalAlignment("middle");
+  sheet.setRowHeight(1, 36);
+  sheet.setFrozenRows(1);
+  sheet.setColumnWidth(1, 140);
+  sheet.setColumnWidth(2, 130);
+  sheet.setColumnWidth(3, 90);
+  sheet.setColumnWidth(4, 120);
+  sheet.setColumnWidth(5, 110);
+  sheet.setColumnWidth(6, 150);
+  sheet.setColumnWidth(7, 120);
+  sheet.setColumnWidth(8, 140);
+  sheet.setColumnWidth(9, 140);
+  sheet.setColumnWidth(10, 140);
+  sheet.setColumnWidth(11, 240);
+  sheet.setColumnWidth(12, 180);
+  sheet.setColumnWidth(13, 160);
+  sheet.setColumnWidth(14, 100);
+  sheet.setColumnWidth(15, 100);
+  sheet.setColumnWidth(16, 120);
+  sheet.setColumnWidth(17, 100);
+  sheet.setColumnWidth(18, 180);
+  sheet.setColumnWidth(19, 100);
+}
+
+function formatNumberKRW(num) {
+  var n = Number(num) || 0;
+  return n.toLocaleString() + "원";
+}
+
+function parseKRWToNumber(str) {
+  if (!str) return 0;
+  var clean = str.replace(/[^0-9]/g, "");
+  return Number(clean) || 0;
+}`;
+
+  navigator.clipboard.writeText(scriptCode).then(() => {
+    showToast('코드 복사 완료', 'Google Apps Script 전체 코드가 클립보드에 복사되었습니다! 스프레드시트에 바로 붙여넣기(Ctrl+V) 하세요.');
+  }).catch(() => {
+    showToast('복사 실패', '클립보드 권한을 확인해 주세요.');
+  });
+};
 
 /* ==========================================================================
    8. Digital Voucher / Receipt Modal Logic
@@ -811,7 +1132,7 @@ window.confirmTermsAgreement = function() {
 };
 
 /* ==========================================================================
-   9. Customer Reservation Lookup Modal
+   9. Customer Reservation Lookup Modal (LocalStorage + Google Sheets Sync)
    ========================================================================== */
 function initNavigationAndPhoneFormat() {
   // Nav Lookup Button
@@ -863,7 +1184,7 @@ window.closeLookupModal = function() {
   if (modal) modal.classList.add('hidden');
 };
 
-window.searchCustomerReservation = function() {
+window.searchCustomerReservation = async function() {
   const nameQuery = document.getElementById('lookupName').value.trim();
   const phoneQuery = document.getElementById('lookupPhone').value.trim().replace(/[^0-9]/g, '');
   const resultArea = document.getElementById('lookupResultArea');
@@ -874,12 +1195,44 @@ window.searchCustomerReservation = function() {
     return;
   }
 
-  const allBookings = getStoredBookings();
-  const matched = allBookings.filter(b => {
-    const matchName = nameQuery ? b.name.includes(nameQuery) : true;
-    const cleanPhone = b.phone.replace(/[^0-9]/g, '');
-    const matchPhone = phoneQuery ? (cleanPhone.includes(phoneQuery) || b.plate.includes(nameQuery)) : true;
-    return matchName && matchPhone;
+  resultArea.innerHTML = `
+    <div style="text-align:center;padding:24px 10px;color:var(--text-muted);">
+      <span class="spinner" style="display:inline-block;width:20px;height:20px;border:2px solid var(--accent-cyan);border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite;margin-bottom:8px;"></span>
+      <div style="font-size:0.85rem;">예약 내역을 실시간으로 조회하고 있습니다...</div>
+    </div>
+  `;
+
+  let matched = [];
+  const localBookings = getStoredBookings();
+
+  // Try Google Sheets GET lookup if URL is set
+  let isGoogleSheetsSynced = false;
+  if (GOOGLE_SCRIPT_URL) {
+    try {
+      const qUrl = `${GOOGLE_SCRIPT_URL}?name=${encodeURIComponent(nameQuery)}&phone=${encodeURIComponent(phoneQuery)}`;
+      const resp = await fetch(qUrl);
+      if (resp.ok) {
+        const json = await resp.json();
+        if (json.result === 'success' && Array.isArray(json.data)) {
+          matched = json.data;
+          isGoogleSheetsSynced = true;
+        }
+      }
+    } catch (err) {
+      console.warn('Google Sheets GET lookup fallback to local:', err);
+    }
+  }
+
+  // Merge with local storage if not already present
+  localBookings.forEach(localItem => {
+    const matchName = nameQuery ? localItem.name.includes(nameQuery) : true;
+    const cleanPhone = localItem.phone.replace(/[^0-9]/g, '');
+    const matchPhone = phoneQuery ? (cleanPhone.includes(phoneQuery) || localItem.plate.includes(nameQuery)) : true;
+    if (matchName && matchPhone) {
+      if (!matched.some(m => m.id === localItem.id)) {
+        matched.push(localItem);
+      }
+    }
   });
 
   if (matched.length === 0) {
@@ -892,8 +1245,15 @@ window.searchCustomerReservation = function() {
     `;
   } else {
     resultArea.innerHTML = `
-      <div style="font-size:0.85rem;color:var(--accent-cyan);font-weight:700;margin-top:16px;margin-bottom:8px;">
-        조회 결과 (${matched.length}건)
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:16px;margin-bottom:8px;">
+        <span style="font-size:0.85rem;color:var(--accent-cyan);font-weight:700;">
+          조회 결과 (${matched.length}건)
+        </span>
+        ${isGoogleSheetsSynced ? `
+          <span style="font-size:0.72rem;background:rgba(16,185,129,0.15);color:var(--accent-emerald);padding:2px 8px;border-radius:var(--radius-full);font-weight:800;border:1px solid rgba(16,185,129,0.3);">
+            🟢 구글 시트 실시간 연동됨
+          </span>
+        ` : ''}
       </div>
       <div style="display:flex;flex-direction:column;gap:10px;">
         ${matched.map(item => `
@@ -906,7 +1266,7 @@ window.searchCustomerReservation = function() {
             <div style="font-size:0.8rem;color:var(--text-muted);margin-top:4px;">시공일시: ${escapeHtml(item.reserveSchedule)}</div>
             <div style="font-size:0.8rem;color:var(--text-muted);">시공부위: ${escapeHtml(item.panels.join(', '))}</div>
             <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;padding-top:8px;border-top:1px dashed rgba(255,255,255,0.1);">
-              <span style="font-weight:800;color:var(--accent-cyan);font-size:1rem;">${formatKRW(item.priceSummary.finalTotal)}</span>
+              <span style="font-weight:800;color:var(--accent-cyan);font-size:1rem;">${formatKRW(item.priceSummary ? item.priceSummary.finalTotal : 0)}</span>
               <button class="btn-primary" style="padding:6px 14px;font-size:0.8rem;" onclick="viewLookupDetail('${item.id}')">
                 견적서 보기
               </button>

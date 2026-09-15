@@ -35,6 +35,11 @@
       </nav>
 
       <div class="nav-actions">
+        <button id="navSheetsBtn" class="btn-sheets-sync" title="구글 스프레드시트 실시간 연동 설정" onclick="openSheetsConfigModal()">
+          <span class="sync-dot" id="navSyncDot"></span>
+          <i data-lucide="sheet" style="width:16px;height:16px;"></i>
+          <span>구글시트 연동</span>
+        </button>
         <button id="navLookupBtn" class="btn-lookup" title="예약 및 견적 내역 조회">
           <i data-lucide="search" style="width:16px;height:16px;"></i>
           <span>내 예약/견적 조회</span>
@@ -828,7 +833,8 @@
           <p><a href="#studioSection" style="display:block;margin-bottom:6px;">실시간 부분광택 견적기</a></p>
           <p><a href="#beforeAfterSection" style="display:block;margin-bottom:6px;">비포 & 애프터 갤러리</a></p>
           <p><a href="#reserveSection" style="display:block;margin-bottom:6px;">온라인 시공 예약</a></p>
-          <p><a href="javascript:void(0)" onclick="openLookupModal()" style="display:block;color:var(--accent-cyan);">내 예약/견적 조회</a></p>
+          <p><a href="javascript:void(0)" onclick="openLookupModal()" style="display:block;color:var(--accent-cyan);margin-bottom:6px;">내 예약/견적 조회</a></p>
+          <p><a href="javascript:void(0)" onclick="openSheetsConfigModal()" style="display:block;color:var(--accent-emerald);font-weight:700;"><i data-lucide="sheet" style="width:14px;height:14px;vertical-align:middle;margin-right:4px;"></i>구글시트 실시간 연동 관리</a></p>
         </div>
 
         <div>
@@ -1041,6 +1047,112 @@
             약관 확인 및 동의 완료
           </button>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Google Sheets Real-Time Sync Configuration Modal -->
+  <div class="modal-overlay hidden" id="sheetsConfigModal">
+    <div class="modal-container" style="max-width: 680px;">
+      <div class="modal-header">
+        <div class="modal-title">
+          <i data-lucide="sheet" style="color:var(--accent-emerald);"></i>
+          <span>구글 스프레드시트 실시간 연동 관리</span>
+        </div>
+        <div class="modal-close-btn" onclick="closeSheetsConfigModal()">
+          <i data-lucide="x" style="width:22px;height:22px;"></i>
+        </div>
+      </div>
+
+      <div class="modal-body" style="max-height: 75vh; overflow-y: auto;">
+        
+        <!-- Live Status Card -->
+        <div class="sync-status-card" id="syncStatusCard">
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <span class="status-indicator-dot active" id="modalStatusDot"></span>
+              <div>
+                <div style="font-weight:800;color:#fff;font-size:0.95rem;" id="modalStatusTitle">실시간 연동 상태: 미연동 (로컬 저장소 모드)</div>
+                <div style="font-size:0.78rem;color:var(--text-muted);margin-top:2px;" id="modalStatusDesc">구글 Apps Script 웹 앱 URL을 입력하면 고객 예약이 실시간으로 구글 시트에 자동 기록됩니다.</div>
+              </div>
+            </div>
+            <span class="badge" id="modalStatusBadge" style="background:rgba(255,255,255,0.08);color:var(--text-muted);font-size:0.75rem;padding:4px 10px;border-radius:12px;font-weight:700;">연동 필요</span>
+          </div>
+        </div>
+
+        <!-- Google Apps Script URL Input Form -->
+        <div style="margin-top: 18px;">
+          <label style="font-size:0.85rem;font-weight:800;color:var(--text-main);display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+            <span>구글 Apps Script 웹 앱 URL (Web App URL)</span>
+            <a href="https://sheets.new" target="_blank" rel="noopener" style="font-size:0.75rem;color:var(--accent-cyan);text-decoration:underline;">
+              <i data-lucide="external-link" style="width:12px;height:12px;vertical-align:middle;"></i> 새 구글시트 만들기
+            </a>
+          </label>
+          <div class="input-field-wrap">
+            <i data-lucide="link" class="field-icon"></i>
+            <input type="url" id="gasScriptUrlInput" class="form-input" placeholder="https://script.google.com/macros/s/.../exec" style="font-size:0.82rem;font-family:monospace;">
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px;">
+          <button type="button" class="btn-primary" style="padding:11px;" onclick="saveGoogleScriptUrl()">
+            <i data-lucide="save" style="width:16px;height:16px;vertical-align:middle;margin-right:4px;"></i>
+            URL 저장 및 활성화
+          </button>
+          <button type="button" class="btn-secondary" style="padding:11px;" onclick="testGoogleSheetsPing()">
+            <i data-lucide="send" style="width:16px;height:16px;vertical-align:middle;margin-right:4px;"></i>
+            연동 테스트 전송
+          </button>
+        </div>
+
+        <!-- Quick 1-Click Code Copy Section -->
+        <div style="margin-top: 24px; background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 16px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+            <div style="font-size:0.88rem;font-weight:800;color:var(--accent-cyan);display:flex;align-items:center;gap:6px;">
+              <i data-lucide="code-2" style="width:16px;height:16px;"></i>
+              <span>Google Apps Script 연동 코드 (google-apps-script.js)</span>
+            </div>
+            <button type="button" class="btn-secondary" style="padding:4px 10px;font-size:0.75rem;" onclick="copyGASCodeToClipboard()">
+              <i data-lucide="copy" style="width:12px;height:12px;vertical-align:middle;margin-right:2px;"></i>
+              코드 원클릭 복사
+            </button>
+          </div>
+          <p style="font-size:0.78rem;color:var(--text-muted);line-height:1.5;margin-bottom:10px;">
+            구글 스프레드시트 메뉴 <strong>[확장 프로그램] &gt; [Apps Script]</strong>에 아래 코드를 붙여넣고 <strong>[배포] &gt; [새 배포] &gt; [웹 앱 (액세스: 모든 사용자)]</strong>로 배포한 후 생성된 URL을 위에 등록해 주세요.
+          </p>
+          <div style="background:#090d16;border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:10px;font-family:monospace;font-size:0.74rem;color:#38bdf8;max-height:120px;overflow-y:auto;white-space:pre-wrap;" id="gasCodePreview">
+// POLISH LAB 구글 스프레드시트 실시간 연동 백엔드
+// 전체 코드는 상단 '코드 원클릭 복사' 버튼으로 복사할 수 있습니다.
+function doPost(e) { ... }
+function doGet(e) { ... }
+          </div>
+        </div>
+
+        <!-- Step-by-Step Instructions Accordion/Guide -->
+        <div style="margin-top: 20px;">
+          <div style="font-size:0.85rem;font-weight:800;color:var(--text-main);margin-bottom:10px;">
+            📌 3분 완성 실시간 연동 가이드
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px;font-size:0.8rem;color:var(--text-muted);line-height:1.5;">
+            <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:6px;padding:10px;">
+              <strong style="color:var(--text-main);">1단계. 구글 시트 생성</strong>: <a href="https://sheets.new" target="_blank" rel="noopener" style="color:var(--accent-cyan);text-decoration:underline;">sheets.new</a>에 접속하여 새 스프레드시트를 생성합니다.
+            </div>
+            <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:6px;padding:10px;">
+              <strong style="color:var(--text-main);">2단계. Apps Script 열기</strong>: 상단 메뉴 <strong>[확장 프로그램] &gt; [Apps Script]</strong>를 클릭합니다.
+            </div>
+            <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:6px;padding:10px;">
+              <strong style="color:var(--text-main);">3단계. 코드 붙여넣기</strong>: 기존 내용을 모두 지우고 위의 <strong>[코드 원클릭 복사]</strong> 버튼으로 복사한 코드를 붙여넣은 뒤 저장(Ctrl+S)합니다.
+            </div>
+            <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:6px;padding:10px;">
+              <strong style="color:var(--text-main);">4단계. 웹 앱 배포</strong>: 우측 상단 <strong>[배포] &gt; [새 배포]</strong> 클릭 &gt; 유형 <strong>[웹 앱]</strong> &gt; 액세스 권한 <strong>[모든 사용자 (Anyone)]</strong> 선택 후 배포합니다.
+            </div>
+            <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:6px;padding:10px;">
+              <strong style="color:var(--text-main);">5단계. URL 등록</strong>: 발급된 웹 앱 URL을 복사하여 상단 입력칸에 넣고 <strong>[URL 저장 및 활성화]</strong>를 누르면 실시간 연동이 시작됩니다!
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
   </div>
